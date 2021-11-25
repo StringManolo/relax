@@ -2,9 +2,10 @@
 
 #### npm scripts
 
+| Command | Description |
 | --- | --- |
 | npm run compile | Compile the typescript project |
-| npm run push -- "Commit message" | Git add commit and push |
+| npm run push "Commit message" | Git add commit and push |
 | npm start | Create Postgresql and/or start the service |
 | npm stop | Stop postgesql service |
 | npm run showPgLogs | Show service logs |
