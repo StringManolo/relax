@@ -21,6 +21,7 @@ app.get("/", (request, response) => {
     });
 });
 app.get("/users", queries_1.getUsers);
+app.get("/users/:id", queries_1.getUserById);
 app.listen(port, () => {
     console.log("Server binded to localhost:" + port);
 });

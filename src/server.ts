@@ -2,7 +2,8 @@ import express from "express";
 import bodyParser from "body-parser";
 
 import { 
-  getUsers
+  getUsers,
+  getUserById
 } from "./queries";
 
 const app = express();
@@ -23,7 +24,8 @@ app.get("/", (request, response) => {
   });
 });
 
-app.get("/users", getUsers );
+app.get("/users", getUsers);
+app.get("/users/:id", getUserById);
 
 
 app.listen(port, () => {
