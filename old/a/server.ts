@@ -1,6 +1,8 @@
 import express, { Request, Response, NextFunction } from "express";
 import { HttpError } from "http-errors";
 import bodyParser from "body-parser";
+import jwt from "express-jwt";
+import jwksRsa from "jwks-rsa";
 
 import { 
   getUsers,
@@ -28,6 +30,29 @@ app.get("/", (request, response) => {
   response.json({
     info: "SNR API"
   });
+});
+
+const checkJwt = jwt({
+  secret: jwksRsa.expressJwtSecret({
+    cache: true,
+    rateLimit: true,
+    jwksRequestsPerMinute: 5,
+    jwksUri: "https://stringmanolo.eu.auth0.com/.well-known/jwks.json"
+  }),
+
+  // Validate the audience and the issuer.
+  audience: "https://snr",
+  issuer: "https://stringmanolo.eu.auth0.com/",
+  algorithms: ["RS256"]
+});
+
+app.use(checkJwt);
+app.use((error: HttpError, request: Request, response: Response, next: NextFunction) => {
+  if (error.name === "UnauthorizedError") {
+    response.status(error.status).send({ message: error.message });
+    return;
+  }
+ next();
 });
 
 app.get("/users", getUsers);
