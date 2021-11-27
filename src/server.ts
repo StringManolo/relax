@@ -1,6 +1,9 @@
-import { Client } from "pg";
 import express from "express";
 import bodyParser from "body-parser";
+
+import { 
+  getUsers
+} from "./queries";
 
 const app = express();
 const port = 3000;
@@ -9,15 +12,6 @@ const exit = (exitMsg: string) => {
   console.error(exitMsg);
   process.exit(-1);
 }
-
-const config = {
-  user: "stringmanolo",
-  host: "localhost",
-  password: "temp",
-  port: 5432
-};
-
-
 
 /* <main> */
 app.use(bodyParser.json());
@@ -28,6 +22,9 @@ app.get("/", (request, response) => {
     info: "SNR API"
   });
 });
+
+app.get("/users", getUsers );
+
 
 app.listen(port, () => {
   console.log("Server binded to localhost:" + port);
