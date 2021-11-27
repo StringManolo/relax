@@ -37,6 +37,7 @@ CREATE TABLE users (
   is_active BOOL,
   is_reported BOOL,
   is_blocked BOOL,
+  bio VARCHAR(255),
   created_at DATE default CURRENT_DATE,
   updated_at DATE
 );
@@ -53,11 +54,12 @@ INSERT INTO users (
   middle_name,
   gender,
   country,
-  profile_picture_url,
+  profile_picture_url, 
   verification_code,
   is_active,
   is_reported,
   is_blocked,
+  bio,
   updated_at
 ) VALUES (
   '555-555-555',
@@ -74,6 +76,7 @@ INSERT INTO users (
   '1',
   '0',
   '0',
+  'Hello :D',
   CURRENT_DATE
 ), (
   '555-555-556',
@@ -90,6 +93,7 @@ INSERT INTO users (
   '1',
   '0',
   '0',
+  'Ey!',
   CURRENT_DATE
 );
 ```
