@@ -6,7 +6,7 @@
   "scripts": {
     "compile": "tsc",
     "push": "bash ./scripts/push.sh",
-    "start": "if [ ! -d \"db\" ]; then initdb db; fi; sleep 3s; pg_ctl -D db -l db/log.txt start; node ./dist/src/server.js 2>1 > /dev/null & echo 'Node server binded to http://localhost:3000'",
+    "start": "if [ ! -d \"db\" ]; then initdb db; fi; sleep 3s; pg_ctl -D db -l db/log.txt start; node ./dist/src/server.js 2>&1 > /dev/null & echo 'Node server binded to http://localhost:3000'",
     "stop": "pg_ctl -D db stop; pkill -f 'node ./dist/src/server.js'",
     "showPgLogs": "cat db/log.txt | less",
     "deletePgLogs": "rm db/log.txt",

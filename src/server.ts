@@ -3,7 +3,12 @@ import bodyParser from "body-parser";
 
 import { 
   getUsers,
-  getUserById
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
+
+  updateUserBio
 } from "./queries";
 
 const app = express();
@@ -26,7 +31,11 @@ app.get("/", (request, response) => {
 
 app.get("/users", getUsers);
 app.get("/users/:id", getUserById);
+app.post("/users", createUser);
+app.put("/users/:id", updateUser);
+app.delete("/users/:id", deleteUser);
 
+app.put("/users/:id/:bio", updateUserBio);
 
 app.listen(port, () => {
   console.log("Server binded to localhost:" + port);

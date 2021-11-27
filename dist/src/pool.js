@@ -6,7 +6,7 @@ const pool = new pg_1.Pool({
     user: "stringmanolo",
     host: "localhost",
     database: "snr",
-    password: "tmp",
+    password: "123456",
     port: 5432
 });
 exports.default = pool;

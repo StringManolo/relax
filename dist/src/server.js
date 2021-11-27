@@ -22,6 +22,10 @@ app.get("/", (request, response) => {
 });
 app.get("/users", queries_1.getUsers);
 app.get("/users/:id", queries_1.getUserById);
+app.post("/users", queries_1.createUser);
+app.put("/users/:id", queries_1.updateUser);
+app.delete("/users/:id", queries_1.deleteUser);
+app.put("/users/:id/:bio", queries_1.updateUserBio);
 app.listen(port, () => {
     console.log("Server binded to localhost:" + port);
 });

@@ -19,16 +19,79 @@
 ```\c snr```  
 + Create a table for users
 ```
+CREATE TYPE gender AS ENUM ('male', 'female', 'other'); 
+
 CREATE TABLE users (
   ID SERIAL PRIMARY KEY,
-  name VARCHAR(30),
-  email VARCHAR(60)
+  phone VARCHAR(16),
+  email VARCHAR(60),
+  username VARCHAR(100),
+  password VARCHAR(255),
+  first_name VARCHAR(20),
+  last_name VARCHAR(20),
+  middle_name VARCHAR(20),
+  gender gender,
+  country VARCHAR(255),
+  profile_picture_url VARCHAR(255),
+  verification_code CHAR(6),
+  is_active BOOL,
+  is_reported BOOL,
+  is_blocked BOOL,
+  created_at DATE default CURRENT_DATE,
+  updated_at DATE
 );
 ```  
 + Create 2 test users  
 ```
-INSERT INTO users (name,email) 
-  VALUES ('stringmanolo', 'stringmanolo@example.com'), ('andy', 'andy@example.com');
+INSERT INTO users (
+  phone,
+  email,
+  username,
+  password,
+  first_name,
+  last_name,
+  middle_name,
+  gender,
+  country,
+  profile_picture_url,
+  verification_code,
+  is_active,
+  is_reported,
+  is_blocked,
+  updated_at
+) VALUES (
+  '555-555-555',
+  'stringmanolo@example.com',
+  'StringManolo',
+  '123456',
+  'Manolo',
+  'Javascript',
+  'Developer',
+  'male',
+  'spain',
+  'https://google.com/favicon.ico',
+  '625625',
+  '1',
+  '0',
+  '0',
+  CURRENT_DATE
+), (
+  '555-555-556',
+  'alice@example.com',
+  'Aliii',
+  '123456',
+  'Alice',
+  'Dummy',
+  'User',
+  'female',
+  'france',
+  'https://google.com/favicon.ico',
+  '123123',
+  '1',
+  '0',
+  '0',
+  CURRENT_DATE
+);
 ```
 
 
