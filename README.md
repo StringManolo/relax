@@ -21,9 +21,12 @@
 ```
 CREATE TYPE gender AS ENUM ('male', 'female', 'other'); 
 
+CREATE TYPE rol as ENUM ('admin', 'user');
+
 CREATE TABLE users (
   ID SERIAL PRIMARY KEY,
   phone VARCHAR(16),
+  rol rol,
   email VARCHAR(60),
   username VARCHAR(100),
   password VARCHAR(255),
@@ -46,6 +49,7 @@ CREATE TABLE users (
 ```
 INSERT INTO users (
   phone,
+  rol,
   email,
   username,
   password,
@@ -63,6 +67,7 @@ INSERT INTO users (
   updated_at
 ) VALUES (
   '555-555-555',
+  'admin',
   'stringmanolo@example.com',
   'StringManolo',
   '123456',
@@ -80,6 +85,7 @@ INSERT INTO users (
   CURRENT_DATE
 ), (
   '555-555-556',
+  'user',
   'alice@example.com',
   'Aliii',
   '123456',
