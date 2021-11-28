@@ -1,5 +1,6 @@
 import pool from "./pool";
 import { Request, Response } from "express";
+import crypto from "crypto";
 
 const getUsers = (request: Request, response: Response) => {
   pool.query("SELECT * FROM users ORDER BY id ASC", (error, results) => {
@@ -55,13 +56,80 @@ const deleteUser = (request: Request, response: Response) => {
   });
 }
 
+const authUser = (request: Request, response: Response) => {
+  const { username, email, password } = request.body;
+
+  if (!password) {
+    //throw new Error("Password missing");
+    response.status(400).json({ missing: "password"});
+    return;
+  }
+
+  if (!username && !email) {
+    //throw new Error("Username or Email missing");
+    response.status(400).json({ missing: "username || email" });
+    return;
+  }
+
+
+  if (username) {
+    pool.query("SELECT * FROM users WHERE username = $1 AND password = $2", [username, password], (error, results) => {
+      if (error) {
+        // throw Error;
+	response.status(401).json({ error: "wrong credentials"});
+	return;
+      }
+
+      // @ts-ignore
+      if (results?.rows[0]?.username === username) {
+	const token = crypto.randomBytes(64).toString("hex");
+	pool.query("UPDATE users SET token = $1 WHERE username = $2 AND password = $3", [token, username, password], (error, results) => {
+          if (error) {
+            // throw Error;
+	    response.status(200).json({ error: error.message });
+	    return;
+	  }
+          response.status(200).json({ token: token });
+	  return;
+        });
+      } else {
+        response.status(401).json({ error: "wrong credentials"});
+	return;
+      }
+    });
+  } else /* email */ {
+    pool.query("SELECT * FROM users WHERE email = $1 AND password = $2", [email, password], (error, results) => {
+      if (error) {
+        // throw Error;
+	response.status(401).json({ error: "wrong credentials"});
+	return;
+      }
+      
+      // @ts-ignore
+      if (results?.rows[0]?.email === email) {
+	const token = crypto.randomBytes(64).toString("hex");
+        pool.query("UPDATE users SET token = $1 WHERE email = $2 AND password = $3", [token, email, password], (error, results) => {
+          if (error) {
+	    response.status(200).json({ error: error.message });
+            return;
+          }
+
+          response.status(200).json({ token: token });
+	  return;
+        });
+      } else {
+        response.status(401).json({ error: "wrong credentials"});
+	return;
+      }
+    }); 
+  }
+  return;
+}
 
 const updateUserBio = (request: Request, response: Response) => {
-console.log("Updating bio...");
   const { bio } = request.body;
   pool.query("UPDATE users SET bio = $1 WHERE id = $2", [bio, +request.params.id], (error, results) => {
     if (error) {
-console.log(error);
       throw error;
     }
 
@@ -75,6 +143,7 @@ export {
   createUser,
   updateUser,
   deleteUser,
+  authUser,
 
   updateUserBio
 }
