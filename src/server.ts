@@ -2,8 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import { HttpError } from "http-errors";
 import bodyParser from "body-parser";
 
-import jwt from "jsonwebtoken";
-import key from "./auth/jwtkey";
+import authMiddleware from "./auth/authMiddleware";
 
 import { 
   getUsers,
@@ -24,9 +23,9 @@ const exit = (exitMsg: string) => {
   process.exit(-1);
 }
 
-/* <main> */
-app.set("key", key);
 
+
+/* <main> */
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -36,10 +35,13 @@ app.get("/", (request, response) => {
   });
 });
 
+app.post("/auth", authUser);
+
+app.use(authMiddleware); /* request token for any other API endpoint */
+
 app.get("/users", getUsers);
 app.get("/users/:id", getUserById);
 app.post("/users", createUser);
-app.post("/auth", authUser);
 app.put("/users/:id", updateUser);
 app.delete("/users/:id", deleteUser);
 

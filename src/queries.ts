@@ -1,4 +1,4 @@
-import pool from "./pool";
+import pool from "./auth/pool";
 import { Request, Response } from "express";
 import crypto from "crypto";
 

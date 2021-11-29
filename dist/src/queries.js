@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateUserBio = exports.authUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = void 0;
-const pool_1 = __importDefault(require("./pool"));
+const pool_1 = __importDefault(require("./auth/pool"));
 const crypto_1 = __importDefault(require("crypto"));
 const getUsers = (request, response) => {
     pool_1.default.query("SELECT * FROM users ORDER BY id ASC", (error, results) => {
