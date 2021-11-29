@@ -2,6 +2,10 @@ import pool from "./auth/pool";
 import { Request, Response } from "express";
 import crypto from "crypto";
 
+const getAPIDoc = (request: Request, response: Response) => {
+  response.status(200).json({ info: "SNR API" });
+}
+
 const getUsers = (request: Request, response: Response) => {
   pool.query("SELECT * FROM users ORDER BY id ASC", (error, results) => {
     if (error) {
@@ -137,7 +141,20 @@ const updateUserBio = (request: Request, response: Response) => {
   });
 }
 
+
+
+const getUserPosts = () => {};
+
+const createUserPost = () => {};
+
+const editUserPost = () => {};
+
+const deleteUserPost = () => {};
+
+
+
 export {
+  getAPIDoc,
   getUsers,
   getUserById,
   createUser,
@@ -145,6 +162,11 @@ export {
   deleteUser,
   authUser,
 
-  updateUserBio
+  updateUserBio,
+
+  getUserPosts,
+  createUserPost,
+  editUserPost,
+  deleteUserPost
 }
 

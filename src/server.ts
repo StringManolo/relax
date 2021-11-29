@@ -5,6 +5,7 @@ import bodyParser from "body-parser";
 import authMiddleware from "./auth/authMiddleware";
 
 import { 
+  getAPIDoc,
   getUsers,
   getUserById,
   createUser,
@@ -12,7 +13,12 @@ import {
   deleteUser,
   authUser,
 
-  updateUserBio
+  updateUserBio,
+
+  getUserPosts,
+  createUserPost,
+  editUserPost,
+  deleteUserPost
 } from "./queries";
 
 const app = express();
@@ -26,26 +32,26 @@ const exit = (exitMsg: string) => {
 
 
 /* <main> */
-app.use(bodyParser.json());
+app.use(bodyParser.json()); // allow to easily get body arguments from requests
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get("/", (request, response) => {
-  response.json({
-    info: "SNR API"
-  });
-});
+app.get("/", getAPIDoc); // show how to use the API
 
-app.post("/auth", authUser);
+app.post("/auth", authUser); // request your token using credentials
 
-app.use(authMiddleware); /* request token for any other API endpoint */
+app.use(authMiddleware); // request token for next API endpoints
 
 app.get("/users", getUsers);
 app.get("/users/:id", getUserById);
 app.post("/users", createUser);
 app.put("/users/:id", updateUser);
 app.delete("/users/:id", deleteUser);
-
 app.put("/users/:id/:bio", updateUserBio);
+
+app.get("/users/:id/posts", getUserPosts); // Get all posts from an user
+app.post("/users/post", createUserPost); // Create a post from current user
+app.put("/users/post", editUserPost); // Edit a post from current user
+app.delete("/users/post", deleteUserPost); // Delete a post from current user;
 
 
 app.listen(port, () => {

@@ -14,21 +14,21 @@ const exit = (exitMsg) => {
     process.exit(-1);
 };
 /* <main> */
-app.use(body_parser_1.default.json());
+app.use(body_parser_1.default.json()); // allow to easily get body arguments from requests
 app.use(body_parser_1.default.urlencoded({ extended: true }));
-app.get("/", (request, response) => {
-    response.json({
-        info: "SNR API"
-    });
-});
-app.post("/auth", queries_1.authUser);
-app.use(authMiddleware_1.default); /* request token for any other API endpoint */
+app.get("/", queries_1.getAPIDoc); // show how to use the API
+app.post("/auth", queries_1.authUser); // request your token using credentials
+app.use(authMiddleware_1.default); // request token for next API endpoints
 app.get("/users", queries_1.getUsers);
 app.get("/users/:id", queries_1.getUserById);
 app.post("/users", queries_1.createUser);
 app.put("/users/:id", queries_1.updateUser);
 app.delete("/users/:id", queries_1.deleteUser);
 app.put("/users/:id/:bio", queries_1.updateUserBio);
+app.get("/users/:id/posts", queries_1.getUserPosts); // Get all posts from an user
+app.post("/users/post", queries_1.createUserPost); // Create a post from current user
+app.put("/users/post", queries_1.editUserPost); // Edit a post from current user
+app.delete("/users/post", queries_1.deleteUserPost); // Delete a post from current user;
 app.listen(port, () => {
     console.log("Server binded to localhost:" + port);
 });

@@ -3,9 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateUserBio = exports.authUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = void 0;
+exports.deleteUserPost = exports.editUserPost = exports.createUserPost = exports.getUserPosts = exports.updateUserBio = exports.authUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = exports.getAPIDoc = void 0;
 const pool_1 = __importDefault(require("./auth/pool"));
 const crypto_1 = __importDefault(require("crypto"));
+const getAPIDoc = (request, response) => {
+    response.status(200).json({ info: "SNR API" });
+};
+exports.getAPIDoc = getAPIDoc;
 const getUsers = (request, response) => {
     pool_1.default.query("SELECT * FROM users ORDER BY id ASC", (error, results) => {
         if (error) {
@@ -131,3 +135,11 @@ const updateUserBio = (request, response) => {
     });
 };
 exports.updateUserBio = updateUserBio;
+const getUserPosts = () => { };
+exports.getUserPosts = getUserPosts;
+const createUserPost = () => { };
+exports.createUserPost = createUserPost;
+const editUserPost = () => { };
+exports.editUserPost = editUserPost;
+const deleteUserPost = () => { };
+exports.deleteUserPost = deleteUserPost;
