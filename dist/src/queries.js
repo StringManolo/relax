@@ -138,15 +138,22 @@ const updateUserBio = (request, response) => {
 };
 exports.updateUserBio = updateUserBio;
 /* POSTS (PUBLICACIONES) */
-const getUserPosts = () => { };
+const getUserPosts = (request, response) => {
+    const userID = request === null || request === void 0 ? void 0 : request.headers["user_id"];
+    if (userID) {
+        pool_1.default.query("SELECT * FROM posts WHERE user_id = $1 ORDER BY post_id DESC", [userID], (error, results) => {
+            if (error) {
+                response.status(401).json({ error: error.message });
+                return;
+            }
+            response.status(200).json(results.rows);
+        });
+    }
+};
 exports.getUserPosts = getUserPosts;
 const createUserPost = (request, response) => {
     const { title, post } = request.body;
     const userID = request === null || request === void 0 ? void 0 : request.headers["user_id"]; // check if not null
-    console.log(`POSTING TO USER WITH ID = ${userID}
-TITLE: ${title}
-POST: ${post}
-`);
     if (userID) {
         pool_1.default.query("INSERT INTO posts (user_id, title, post) VALUES ($1, $2, $3)", [userID, title, post], (error, results) => {
             if (error) {
