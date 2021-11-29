@@ -13,7 +13,8 @@ const authMiddleware = (request, response, next) => {
             if (error) {
                 return;
             }
-            if ((_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.username) {
+            if ((_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.id) {
+                request.headers["user_id"] = results.rows[0].id; // ugly way to pass id to next end point
                 next();
             }
             else {

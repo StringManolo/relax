@@ -10,7 +10,8 @@ const authMiddleware = (request: Request, response: Response, next: NextFunction
         return;
       }
 
-      if (results?.rows[0]?.username) {
+      if (results?.rows[0]?.id) {
+        request.headers["user_id"] = results.rows[0].id; // ugly way to pass id to next end point
         next();
       } else {
         response.status(401).json({ error: "wrong token"});

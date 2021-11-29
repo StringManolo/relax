@@ -17,7 +17,7 @@
 ```CREATE DATABASE snr;```  
 + Connect to the db  
 ```\c snr```  
-+ Create a table for users
++ Create a table for users and posts
 ```
 CREATE TYPE gender AS ENUM ('male', 'female', 'other'); 
 
@@ -45,8 +45,21 @@ CREATE TABLE users (
   created_at DATE default CURRENT_DATE,
   updated_at DATE
 );
+
+
+
+CREATE TABLE posts (
+  post_id SERIAL PRIMARY KEY,
+  user_id INT,
+  title VARCHAR(120),
+  post VARCHAR(500),
+  timestamp TIMESTAMP default CURRENT_TIMESTAMP,
+  CONSTRAINT fk_id
+    FOREIGN KEY(user_id)
+      REFERENCES users(ID)
+);
 ```  
-+ Create 2 test users  
++ Create 2 test users and posts
 ```
 INSERT INTO users (
   phone,
@@ -105,6 +118,21 @@ INSERT INTO users (
   '0',
   'Ey!',
   CURRENT_DATE
+);
+
+
+INSERT INTO posts (
+  user_id,
+  title,
+  post
+) VALUES (
+  1,
+  'Mi primer publicacion',
+  'Hola djsknsjduzjsjjsskksksuddjsjjsjsjududjdjdjj'
+), (
+  2,
+  'Mi primer publicacion',
+  'djjsskskskskskskksksksksks'
 );
 ```
 

@@ -129,15 +129,36 @@ const updateUserBio = (request, response) => {
     const { bio } = request.body;
     pool_1.default.query("UPDATE users SET bio = $1 WHERE id = $2", [bio, +request.params.id], (error, results) => {
         if (error) {
-            throw error;
+            //throw error;
+            console.log(error);
+            return;
         }
         response.status(200).send(`Bio updated`);
     });
 };
 exports.updateUserBio = updateUserBio;
+/* POSTS (PUBLICACIONES) */
 const getUserPosts = () => { };
 exports.getUserPosts = getUserPosts;
-const createUserPost = () => { };
+const createUserPost = (request, response) => {
+    const { title, post } = request.body;
+    const userID = request === null || request === void 0 ? void 0 : request.headers["user_id"]; // check if not null
+    console.log(`POSTING TO USER WITH ID = ${userID}
+TITLE: ${title}
+POST: ${post}
+`);
+    if (userID) {
+        pool_1.default.query("INSERT INTO posts (user_id, title, post) VALUES ($1, $2, $3)", [userID, title, post], (error, results) => {
+            if (error) {
+                console.log(error);
+                return;
+            }
+            response.status(200).send(`Done`);
+        });
+    }
+    else {
+    }
+};
 exports.createUserPost = createUserPost;
 const editUserPost = () => { };
 exports.editUserPost = editUserPost;

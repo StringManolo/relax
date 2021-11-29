@@ -134,7 +134,9 @@ const updateUserBio = (request: Request, response: Response) => {
   const { bio } = request.body;
   pool.query("UPDATE users SET bio = $1 WHERE id = $2", [bio, +request.params.id], (error, results) => {
     if (error) {
-      throw error;
+      //throw error;
+      console.log(error);
+      return;
     }
 
     response.status(200).send(`Bio updated`);
@@ -143,9 +145,31 @@ const updateUserBio = (request: Request, response: Response) => {
 
 
 
+/* POSTS (PUBLICACIONES) */
 const getUserPosts = () => {};
 
-const createUserPost = () => {};
+const createUserPost = (request: Request, response: Response) => {
+  const { title, post } = request.body;
+  const userID = request?.headers["user_id"]; // check if not null
+
+  console.log(`POSTING TO USER WITH ID = ${userID}
+TITLE: ${title}
+POST: ${post}
+`);
+
+  if (userID) {
+    pool.query("INSERT INTO posts (user_id, title, post) VALUES ($1, $2, $3)", [userID, title, post], (error, results) => {
+      if (error) {
+        console.log(error);
+	return;
+      }
+
+      response.status(200).send(`Done`);
+    });
+  } else {
+
+  }
+}
 
 const editUserPost = () => {};
 
