@@ -141,7 +141,7 @@ INSERT INTO posts (
 
 | Command | Description |
 | --- | --- |
-| npm run compile | Compile the typescript project withput credentials |
+| npm run compile | Compile the typescript project without credentials |
 | npm run compile-dev | Compile the typescript project to be runnable |
 | npm run push "Commit message" | Git add, git commit and git push without credentials |
 | npm start | Create Postgresql and/or start the service |

@@ -1,0 +1,1 @@
+curl http://localhost:3000/signin -d 'phone=555555555&email=stringmanolo@gmail.com&username=bob54&password=12345678&firstName=Bob&lastName=Smith&middleName=json&gender=male&country=spain&profilePictureUrl=https://google.com/favicon.ico'

@@ -17,11 +17,13 @@ const exit = (exitMsg) => {
 app.use(body_parser_1.default.json()); // allow to easily get body arguments from requests
 app.use(body_parser_1.default.urlencoded({ extended: true }));
 app.get("/", queries_1.getAPIDoc); // show how to use the API
+app.post("/signin", queries_1.signin); // register your account
+// TODO: validate verifucation code endpoint
 app.post("/auth", queries_1.authUser); // request your token using credentials
 app.use(authMiddleware_1.default); // request token for next API endpoints
 app.get("/users", queries_1.getUsers);
 app.get("/users/:id", queries_1.getUserById);
-app.post("/users", queries_1.createUser);
+app.post("/users", queries_1.createUser); // test only
 app.put("/users/:id", queries_1.updateUser);
 app.delete("/users/:id", queries_1.deleteUser);
 app.put("/users/:id/:bio", queries_1.updateUserBio);

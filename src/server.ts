@@ -18,7 +18,9 @@ import {
   getUserPosts,
   createUserPost,
   editUserPost,
-  deleteUserPost
+  deleteUserPost,
+
+  signin
 } from "./queries";
 
 const app = express();
@@ -37,13 +39,15 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/", getAPIDoc); // show how to use the API
 
+app.post("/signin", signin); // register your account
+// TODO: validate verifucation code endpoint
 app.post("/auth", authUser); // request your token using credentials
 
 app.use(authMiddleware); // request token for next API endpoints
 
 app.get("/users", getUsers);
 app.get("/users/:id", getUserById);
-app.post("/users", createUser);
+app.post("/users", createUser); // test only
 app.put("/users/:id", updateUser);
 app.delete("/users/:id", deleteUser);
 app.put("/users/:id/:bio", updateUserBio);

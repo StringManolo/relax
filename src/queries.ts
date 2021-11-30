@@ -1,4 +1,5 @@
 import pool from "./auth/pool";
+import sendMail from "./auth/sendMail";
 import { Request, Response } from "express";
 import crypto from "crypto";
 
@@ -185,6 +186,107 @@ const editUserPost = () => {};
 const deleteUserPost = () => {};
 
 
+const signin = (request: Request, response: Response) => {
+  const { phone, email, username, password, firstName, lastName, middleName, gender, country, profilePictureUrl } = request.body;
+
+  const rol = "user";
+  const verificationCode = crypto.randomInt(0, 999999);
+  const isActive = false;
+  const isReported = false;
+  const isBlocked = false;
+  const bio = "";
+ 
+  if (!/^\d+$/.test(phone)) {
+    response.status(401).send({ error: "phone number not valid format" });
+    return;
+  }
+
+  if (!/^\S+@\S+\.\S+$/.test(email)) {
+    response.status(401).send({ error: "email not valid format" });
+    return;
+  }
+
+  if (!/^\w+$/.test(username)) {
+    response.status(401).send({ error: "username not valid format" });
+    return;
+  }
+
+  if (password.length < 8 || password.length > 100) {
+    response.status(401).send({ error: "password is to short or to long" });
+    return;
+  }
+  // TODO: Force password to be stronger
+ 
+  if (!firstName) {
+    response.status(401).send({ error: "missing firstName" });
+    return;
+  }
+  const trimedFirstName = firstName.replace(/\s\s+/g, " ").trim();
+  if (trimedFirstName.length < 2 ) {
+    response.status(401).send({ error: "firstname is to short after removing spaces" });
+    return;
+  }
+
+  if (!lastName) {
+    response.status(401).send({ error: "missing lastName" });
+    return;
+  }
+
+  const trimedLastName = lastName.replace(/\s\s+/g, " ").trim();
+  if (trimedLastName.length < 2) {
+    response.status(401).send({ error: "firstname is to short after removing spaces" });
+    return;
+  }
+  
+  if (!middleName) {
+    response.status(401).send({ error: "missing middleName" });
+    return;
+  }
+
+  const trimedMiddleName = middleName.replace(/\s\s+/g, " ").trim();
+  if (trimedMiddleName.length < 2) {
+    response.status(401).send({ error: "middlename is to short after removing spaces" });
+    return;
+  }
+
+  if (gender !== "male" && gender !== "female" && gender !== "other") {
+    response.status(401).send({ error: "chose 'male', 'female' or 'other'" });
+    return;
+  }
+
+  if (country.length > 100) {
+    response.status(401).send({ error: "country is to long" });
+    return;
+  }
+
+  if (/javascript\:/gi.test(profilePictureUrl) || /data\:/gi.test(profilePictureUrl)) {
+    response.status(401).send({ error: "hacking disabled" });
+    return;
+  }
+
+  if (profilePictureUrl.length > 250) {
+    response.status(401).send({ error: "url is to long" });
+  }
+
+  /* TODO: Check if username/email already exists *?
+  /* TODO: Insert into database */
+
+  const subject = "Relax Social Network - Verification Code";
+  const data = `Welcome to Relax.
+
+Send us your verification code
+${verificationCode}
+
+Have a great stance.
+`;
+
+  sendMail(email, subject, data);
+  response.status(200).send({ status: "Email send" });
+  return;
+}
+
+
+
 
 export {
   getAPIDoc,
@@ -200,6 +302,8 @@ export {
   getUserPosts,
   createUserPost,
   editUserPost,
-  deleteUserPost
+  deleteUserPost,
+
+  signin
 }
 
