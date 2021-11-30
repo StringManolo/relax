@@ -4,7 +4,8 @@
   "description": "Social Network",
   "main": "index.js",
   "scripts": {
-    "compile": "tsc",
+    "compile": "npx stripc && tsc && npx stripc recover",
+    "compile-dev": "tsc",
     "push": "bash ./scripts/push.sh",
     "start": "if [ ! -d \"db\" ]; then initdb db; fi; sleep 3s; pg_ctl -D db -l db/log.txt start; node ./dist/src/server.js 2>&1 > /dev/null & echo 'Node server binded to http://localhost:3000'",
     "stop": "pg_ctl -D db stop; pkill -f 'node ./dist/src/server.js'",
@@ -30,9 +31,11 @@
     "@types/node": "^16.11.10",
     "@types/pg": "^8.6.1",
     "express": "^4.17.1",
+    "gmail-send": "^1.8.14",
     "jsonwebtoken": "^8.5.1",
     "node-fetch": "^3.1.0",
     "pg": "^8.7.1",
+    "strip-credentials": "^2.2.6",
     "typescript": "^4.5.2"
   }
 }
