@@ -82,6 +82,7 @@ const authUser = (request, response) => {
             if (((_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.username) === username) {
                 if ((results === null || results === void 0 ? void 0 : results.rows[0]["is_active"]) !== true) {
                     response.status(401).json({ error: "Account not activated yet. Check your email for verification code" });
+                    return;
                 }
                 const token = crypto_1.default.randomBytes(64).toString("hex");
                 pool_1.default.query("UPDATE users SET token = $1 WHERE username = $2 AND password = $3", [token, username, password], (error, results) => {
@@ -112,6 +113,7 @@ const authUser = (request, response) => {
             if (((_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.email) === email) {
                 if ((results === null || results === void 0 ? void 0 : results.rows[0]["is_active"]) !== true) {
                     response.status(401).json({ error: "Account not activated yet. Check your email for verification code" });
+                    return;
                 }
                 const token = crypto_1.default.randomBytes(64).toString("hex");
                 pool_1.default.query("UPDATE users SET token = $1 WHERE email = $2 AND password = $3", [token, email, password], (error, results) => {

@@ -15,3 +15,6 @@
 + Add rate limit for verificationCode tries
 + Add rate limit for verificationCode (ban email 24h after 10 tries)
 + Request account (is_active === true) for /auth endpoint before token generation
++ Legal and Privacy stuff
++ Registarion mark
++ registrarion domain

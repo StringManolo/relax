@@ -89,6 +89,7 @@ const authUser = (request: Request, response: Response) => {
       if (results?.rows[0]?.username === username) {
 	if (results?.rows[0]["is_active"] !== true) {
           response.status(401).json({ error: "Account not activated yet. Check your email for verification code"});
+	  return;
 	}
 	const token = crypto.randomBytes(64).toString("hex");
 	pool.query("UPDATE users SET token = $1 WHERE username = $2 AND password = $3", [token, username, password], (error, results) => {
@@ -117,6 +118,7 @@ const authUser = (request: Request, response: Response) => {
       if (results?.rows[0]?.email === email) {
 	if (results?.rows[0]["is_active"] !== true) {
 	  response.status(401).json({ error: "Account not activated yet. Check your email for verification code"});
+	  return;
 	}
 	const token = crypto.randomBytes(64).toString("hex");
         pool.query("UPDATE users SET token = $1 WHERE email = $2 AND password = $3", [token, email, password], (error, results) => {
