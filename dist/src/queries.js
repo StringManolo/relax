@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verificateCode = exports.signin = exports.deleteUserPost = exports.editUserPost = exports.createUserPost = exports.getUserPosts = exports.updateUserBio = exports.authUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = exports.getAPIDoc = void 0;
+exports.testUsernameExists = exports.verificateCode = exports.signin = exports.deleteUserPost = exports.editUserPost = exports.createUserPost = exports.getUserPosts = exports.updateUserBio = exports.authUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = exports.getAPIDoc = void 0;
 const pool_1 = __importDefault(require("./auth/pool"));
 const sendMail_1 = __importDefault(require("./auth/sendMail"));
 const crypto_1 = __importDefault(require("crypto"));
@@ -336,3 +336,25 @@ const verificateCode = (request, response) => {
     });
 };
 exports.verificateCode = verificateCode;
+const testUsernameExists = (request, response) => {
+    var _a;
+    if ((_a = request === null || request === void 0 ? void 0 : request.params) === null || _a === void 0 ? void 0 : _a.username) {
+        pool_1.default.query("SELECT * FROM users WHERE username = $1", [request.params.username], (error, results) => {
+            var _a;
+            if (error) {
+                response.status(401).send({ error: error.message });
+                return;
+            }
+            if (((_a = results.rows[0]) === null || _a === void 0 ? void 0 : _a.username) === request.params.username) {
+                response.status(200).send({ exists: true });
+            }
+            else {
+                response.status(200).send({ exists: false });
+            }
+        });
+    }
+    else {
+        response.status(401).send({ error: "Missing argument" });
+    }
+};
+exports.testUsernameExists = testUsernameExists;

@@ -21,7 +21,8 @@ import {
   deleteUserPost,
 
   signin,
-  verificateCode
+  verificateCode,
+  testUsernameExists
 } from "./queries";
 
 const app = express();
@@ -39,7 +40,7 @@ app.use(bodyParser.json()); // allow to easily get body arguments from requests
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/", getAPIDoc); // show how to use the API
-
+app.get("/exists/:username", testUsernameExists); // test if the username is already taken
 app.post("/signin", signin); // register your account
 app.post("/verification", verificateCode);
 // TODO: validate verification code endpoint

@@ -379,6 +379,26 @@ const verificateCode = (request: Request, response: Response) => {
   });
 }
 
+const testUsernameExists = (request: Request, response: Response) => {
+  if (request?.params?.username) {
+    pool.query("SELECT * FROM users WHERE username = $1", [request.params.username], (error, results) => {
+      if (error) {
+        response.status(401).send({ error: error.message });
+	return;
+      }
+
+      if (results.rows[0]?.username === request.params.username) {
+        response.status(200).send({ exists: true });
+      } else {
+        response.status(200).send({ exists: false });
+      }
+    });
+  } else {
+    response.status(401).send({ error: "Missing argument" });
+  }
+}
+
+
 
 export {
   getAPIDoc,
@@ -397,6 +417,7 @@ export {
   deleteUserPost,
 
   signin,
-  verificateCode
+  verificateCode,
+  testUsernameExists
 }
 

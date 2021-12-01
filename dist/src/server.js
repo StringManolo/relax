@@ -17,6 +17,7 @@ const exit = (exitMsg) => {
 app.use(body_parser_1.default.json()); // allow to easily get body arguments from requests
 app.use(body_parser_1.default.urlencoded({ extended: true }));
 app.get("/", queries_1.getAPIDoc); // show how to use the API
+app.get("/exists/:username", queries_1.testUsernameExists); // test if the username is already taken
 app.post("/signin", queries_1.signin); // register your account
 app.post("/verification", queries_1.verificateCode);
 // TODO: validate verification code endpoint
