@@ -18,7 +18,8 @@ app.use(body_parser_1.default.json()); // allow to easily get body arguments fro
 app.use(body_parser_1.default.urlencoded({ extended: true }));
 app.get("/", queries_1.getAPIDoc); // show how to use the API
 app.post("/signin", queries_1.signin); // register your account
-// TODO: validate verifucation code endpoint
+app.post("/verification", queries_1.verificateCode);
+// TODO: validate verification code endpoint
 app.post("/auth", queries_1.authUser); // request your token using credentials
 app.use(authMiddleware_1.default); // request token for next API endpoints
 app.get("/users", queries_1.getUsers);

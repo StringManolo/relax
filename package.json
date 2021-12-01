@@ -13,6 +13,8 @@
     "deletePgLogs": "rm db/log.txt",
     "delete": "yes | rm ./db -r",
     "test-signin": "bash ./tests/api/signin-curl.sh",
+    "test-auth": "bash ./tests/api/auth-curl.sh",
+    "test-verification": "bash ./tests/api/verification-curl.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

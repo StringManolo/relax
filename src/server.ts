@@ -20,7 +20,8 @@ import {
   editUserPost,
   deleteUserPost,
 
-  signin
+  signin,
+  verificateCode
 } from "./queries";
 
 const app = express();
@@ -40,7 +41,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.get("/", getAPIDoc); // show how to use the API
 
 app.post("/signin", signin); // register your account
-// TODO: validate verifucation code endpoint
+app.post("/verification", verificateCode);
+// TODO: validate verification code endpoint
 app.post("/auth", authUser); // request your token using credentials
 
 app.use(authMiddleware); // request token for next API endpoints

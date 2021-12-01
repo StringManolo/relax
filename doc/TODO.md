@@ -11,3 +11,7 @@
 + Test token generation security
 + Add a check to find if node has been compiled with crypto support? 
 + Test for sqli, xss, csfr, htmli, parameter pollution, missing headers, etc
++ Add verification code expiration time
++ Add rate limit for verificationCode tries
++ Add rate limit for verificationCode (ban email 24h after 10 tries)
++ Request account (is_active === true) for /auth endpoint before token generation

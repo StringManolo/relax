@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.signin = exports.deleteUserPost = exports.editUserPost = exports.createUserPost = exports.getUserPosts = exports.updateUserBio = exports.authUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = exports.getAPIDoc = void 0;
+exports.verificateCode = exports.signin = exports.deleteUserPost = exports.editUserPost = exports.createUserPost = exports.getUserPosts = exports.updateUserBio = exports.authUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = exports.getAPIDoc = void 0;
 const pool_1 = __importDefault(require("./auth/pool"));
 const sendMail_1 = __importDefault(require("./auth/sendMail"));
 const crypto_1 = __importDefault(require("crypto"));
@@ -80,6 +80,9 @@ const authUser = (request, response) => {
             }
             // @ts-ignore
             if (((_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.username) === username) {
+                if ((results === null || results === void 0 ? void 0 : results.rows[0]["is_active"]) !== true) {
+                    response.status(401).json({ error: "Account not activated yet. Check your email for verification code" });
+                }
                 const token = crypto_1.default.randomBytes(64).toString("hex");
                 pool_1.default.query("UPDATE users SET token = $1 WHERE username = $2 AND password = $3", [token, username, password], (error, results) => {
                     if (error) {
@@ -107,6 +110,9 @@ const authUser = (request, response) => {
             }
             // @ts-ignore
             if (((_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.email) === email) {
+                if ((results === null || results === void 0 ? void 0 : results.rows[0]["is_active"]) !== true) {
+                    response.status(401).json({ error: "Account not activated yet. Check your email for verification code" });
+                }
                 const token = crypto_1.default.randomBytes(64).toString("hex");
                 pool_1.default.query("UPDATE users SET token = $1 WHERE email = $2 AND password = $3", [token, email, password], (error, results) => {
                     if (error) {
@@ -176,6 +182,7 @@ const signin = (request, response) => {
     const { phone, email, username, password, firstName, lastName, middleName, gender, country, profilePictureUrl } = request.body;
     const rol = "user";
     const verificationCode = crypto_1.default.randomInt(0, 999999);
+    console.log("VER-CODE: " + verificationCode); // print in console for debug (avoid open emails constantly
     const isActive = false;
     const isReported = false;
     const isBlocked = false;
@@ -239,18 +246,91 @@ const signin = (request, response) => {
     if (profilePictureUrl.length > 250) {
         response.status(401).send({ error: "url is to long" });
     }
-    /* TODO: Check if username/email already exists *?
-    /* TODO: Insert into database */
-    const subject = "Relax Social Network - Verification Code";
-    const data = `Welcome to Relax.
+    /* TODO: Check if username already exists */
+    pool_1.default.query("SELECT * FROM users WHERE username = $1", [username], (error, results) => {
+        var _a;
+        if (error) {
+            response.status(401).send({ error: error.message });
+            return;
+        }
+        if (((_a = results.rows[0]) === null || _a === void 0 ? void 0 : _a.username) === username) {
+            response.status(401).send({ error: "This username is already taken" });
+            return;
+        }
+        /* TODO: Insert into database timestamp and user active false */
+        pool_1.default.query("INSERT INTO users (phone, email, username, password, first_name, last_name, middle_name, gender, country, profile_picture_url, rol, verification_code, verification_code_time, is_active, is_reported, is_blocked, bio) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)", [phone, email, username, password, firstName, lastName, middleName, gender, country, profilePictureUrl, rol, verificationCode, new Date(), isActive, isReported, isBlocked, bio], (error, results) => {
+            if (error) {
+                console.log(error);
+                response.status(401).send({ error: error.message });
+                return;
+            }
+            const subject = "Relax Social Network - Verification Code";
+            const data = `Welcome to Relax.
 
 Send us your verification code
 ${verificationCode}
 
 Have a great stance.
 `;
-    (0, sendMail_1.default)(email, subject, data);
-    response.status(200).send({ status: "Email send" });
-    return;
+            (0, sendMail_1.default)(email, subject, data);
+            response.status(200).send({ status: "Email send" });
+            return;
+        });
+    });
 };
 exports.signin = signin;
+const verificateCode = (request, response) => {
+    const { verificationCode } = request.body;
+    if (!verificationCode) {
+        response.status(401).send({ error: "You forgot to send verificationCode" });
+        return;
+    }
+    if (!(verificationCode >= 0 && verificationCode < 1000000)) {
+        response.status(401).send({ error: "verification code not valid" });
+        return;
+    }
+    pool_1.default.query("SELECT * FROM users WHERE verification_code = $1", [verificationCode], (error, results) => {
+        if (error) {
+            response.status(401).send({ error: error.message });
+            return;
+        }
+        if (results.rows[0]["is_active"] === true) {
+            response.status(401).send({ error: "Account already activated" });
+            return;
+        }
+        if (results.rows[0]["verification_code"]) {
+            // ver_cod_time check
+            if (results.rows[0]["verification_code_time"]) {
+                const codeGeneratedAt = results.rows[0]["verification_code_time"];
+                const timePassed = (+new Date() - +new Date(codeGeneratedAt));
+                if (timePassed > 86400000) { // 1 day in milliseconds
+                    response.status(401).send({ error: "Verification code expired. Request a new one" });
+                    return;
+                }
+                if (verificationCode === results.rows[0]["verification_code"]) {
+                    pool_1.default.query("UPDATE users SET is_active = $1 WHERE id = $2", [true, results.rows[0].id], (error, results) => {
+                        if (error) {
+                            response.status(401).send({ error: error.message });
+                            return;
+                        }
+                        response.status(200).send({ status: "Account Activated" });
+                        return;
+                    });
+                }
+                else {
+                    response.status(401).send({ error: "Verification_code is wrong" });
+                    return;
+                }
+            }
+            else {
+                response.status(401).send({ error: "Verification time expiration not found in database" });
+                return;
+            }
+        }
+        else {
+            response.status(401).send({ error: "Verification_code not found" });
+            return;
+        }
+    });
+};
+exports.verificateCode = verificateCode;

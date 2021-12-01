@@ -38,6 +38,7 @@ CREATE TABLE users (
   country VARCHAR(255),
   profile_picture_url VARCHAR(255),
   verification_code CHAR(6),
+  verification_code_time TIMESTAMPTZ,
   is_active BOOL,
   is_reported BOOL,
   is_blocked BOOL,
