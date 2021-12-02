@@ -48,7 +48,7 @@ app.post("/auth", authUser); // request your token using credentials
 
 app.use(authMiddleware); // request token for next API endpoints
 
-app.get("/users", getUsers);
+app.get("/users", getUsers); // not finished endpoints: 
 app.get("/users/:id", getUserById);
 app.post("/users", createUser); // test only
 app.put("/users/:id", updateUser);

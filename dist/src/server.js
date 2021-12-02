@@ -23,7 +23,7 @@ app.post("/verification", queries_1.verificateCode);
 // TODO: validate verification code endpoint
 app.post("/auth", queries_1.authUser); // request your token using credentials
 app.use(authMiddleware_1.default); // request token for next API endpoints
-app.get("/users", queries_1.getUsers);
+app.get("/users", queries_1.getUsers); // not finished endpoints: 
 app.get("/users/:id", queries_1.getUserById);
 app.post("/users", queries_1.createUser); // test only
 app.put("/users/:id", queries_1.updateUser);

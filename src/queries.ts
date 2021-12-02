@@ -1,5 +1,7 @@
 import pool from "./auth/pool";
 import sendMail from "./auth/sendMail";
+import hash from "./auth/hash";
+import hashWithIV from "./auth/hashWithIV";
 import { Request, Response } from "express";
 import crypto from "crypto";
 
@@ -78,10 +80,9 @@ const authUser = (request: Request, response: Response) => {
 
 
   if (username) {
-    pool.query("SELECT * FROM users WHERE username = $1 AND password = $2", [username, password], (error, results) => {
+    pool.query("SELECT * FROM users WHERE username = $1"/* AND password = $2"*/, [username/*, password*/], (error, results) => {
       if (error) {
-        // throw Error;
-	response.status(401).json({ error: "wrong credentials"});
+	response.status(401).json({ error: error.message });
 	return;
       }
 
@@ -91,16 +92,47 @@ const authUser = (request: Request, response: Response) => {
           response.status(401).json({ error: "Account not activated yet. Check your email for verification code"});
 	  return;
 	}
+
 	const token = crypto.randomBytes(64).toString("hex");
-	pool.query("UPDATE users SET token = $1 WHERE username = $2 AND password = $3", [token, username, password], (error, results) => {
+
+        // get IV from database
+	pool.query("SELECT * FROM users WHERE username = $1", [username], (error, results) => {
           if (error) {
-            // throw Error;
-	    response.status(200).json({ error: error.message });
+            response.status(401).json({ error: error.message });
 	    return;
 	  }
-          response.status(200).json({ token: token });
-	  return;
-        });
+
+          let iv = "";
+
+          if (results.rows[0]?.password) {
+	    if (/\:/.test(results.rows[0]?.password)) {
+              iv = results.rows[0].password.split(":")[0];
+	    } else {
+              response.status(401).json({ error: "Unable to retrieve IV" });
+	    }
+          } else {
+            response.status(401).json({ error: "Unable to retrieve IV" });
+	    return;
+	  }
+        
+	  (async() => {
+            const userHashedPassword = await hashWithIV(password, iv);
+            if (userHashedPassword === results.rows[0]?.password) {
+              pool.query("UPDATE users SET token = $1 WHERE username = $2 AND password = $3", [token, username, userHashedPassword], (error, results) => {
+                if (error) {
+	          response.status(401).json({ error: error.message });
+	          return;
+	        }
+
+                response.status(200).json({ token: token });
+	        return;
+              });
+	    } else {
+              response.status(401).json({ error: "wrong credentials" });
+	      return;
+	    }
+	  })();
+	});
       } else {
         response.status(401).json({ error: "wrong credentials"});
 	return;
@@ -173,7 +205,7 @@ const getUserPosts = (request: Request, response: Response) => {
 
 const createUserPost = (request: Request, response: Response) => {
   const { title, post } = request.body;
-  const userID = request?.headers["user_id"]; // check if not null
+  const userID = request?.headers["user_id"]; // this header is internal, set by authMiddleware
 
   if (userID) {
     pool.query("INSERT INTO posts (user_id, title, post) VALUES ($1, $2, $3)", [userID, title, post], (error, results) => {
@@ -182,7 +214,7 @@ const createUserPost = (request: Request, response: Response) => {
 	return;
       }
 
-      response.status(200).send(`Done`);
+      response.status(200).send({ status: "Done" });
     });
   } else {
 
@@ -204,7 +236,7 @@ console.log("VER-CODE: " + verificationCode); // print in console for debug (avo
   const isReported = false;
   const isBlocked = false;
   const bio = "";
- 
+
   if (!/^\d+$/.test(phone)) {
     response.status(401).send({ error: "phone number not valid format" });
     return;
@@ -290,19 +322,22 @@ console.log("VER-CODE: " + verificationCode); // print in console for debug (avo
     }
 
 
-    /* TODO: Insert into database timestamp and user active false */
-    pool.query(
-      "INSERT INTO users (phone, email, username, password, first_name, last_name, middle_name, gender, country, profile_picture_url, rol, verification_code, verification_code_time, is_active, is_reported, is_blocked, bio) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)",
-      [phone, email, username, password, firstName, lastName, middleName, gender, country, profilePictureUrl, rol, verificationCode, new Date(), isActive, isReported, isBlocked, bio], (error, results) => {
-      if (error) {
-        console.log(error);
-        response.status(401).send({ error: error.message });
-        return;
-      }
+    (async() => {
+      try {
+        const hashedPassword = await hash(password);
+        /* TODO: Insert into database timestamp and user active false */
+        pool.query(
+          "INSERT INTO users (phone, email, username, password, first_name, last_name, middle_name, gender, country, profile_picture_url, rol, verification_code, verification_code_time, is_active, is_reported, is_blocked, bio) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)",
+          [phone, email, username, hashedPassword, firstName, lastName, middleName, gender, country, profilePictureUrl, rol, verificationCode, new Date(), isActive, isReported, isBlocked, bio], (error, results) => {
+          if (error) {
+            console.log(error);
+            response.status(401).send({ error: error.message });
+            return;
+          }
 
   
-      const subject = "Relax Social Network - Verification Code";
-      const data = `Welcome to Relax.
+          const subject = "Relax Social Network - Verification Code";
+          const data = `Welcome to Relax.
 
 Send us your verification code
 ${verificationCode}
@@ -310,10 +345,17 @@ ${verificationCode}
 Have a great stance.
 `;
 
-      sendMail(email, subject, data);
-      response.status(200).send({ status: "Email send" });
-      return;
-    });
+          sendMail(email, subject, data);
+          response.status(200).send({ status: "Email send" });
+          return;
+        });
+      } catch (error) {
+	if (error instanceof Error) {
+          response.status(401).send({ error: error.message });
+	}
+	return;
+      }
+    })();
   });
 }
 

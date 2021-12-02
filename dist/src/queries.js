@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -6,6 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.testUsernameExists = exports.verificateCode = exports.signin = exports.deleteUserPost = exports.editUserPost = exports.createUserPost = exports.getUserPosts = exports.updateUserBio = exports.authUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = exports.getAPIDoc = void 0;
 const pool_1 = __importDefault(require("./auth/pool"));
 const sendMail_1 = __importDefault(require("./auth/sendMail"));
+const hash_1 = __importDefault(require("./auth/hash"));
+const hashWithIV_1 = __importDefault(require("./auth/hashWithIV"));
 const crypto_1 = __importDefault(require("crypto"));
 const getAPIDoc = (request, response) => {
     response.status(200).json({ info: "SNR API" });
@@ -71,11 +82,10 @@ const authUser = (request, response) => {
         return;
     }
     if (username) {
-        pool_1.default.query("SELECT * FROM users WHERE username = $1 AND password = $2", [username, password], (error, results) => {
+        pool_1.default.query("SELECT * FROM users WHERE username = $1" /* AND password = $2"*/, [username /*, password*/], (error, results) => {
             var _a;
             if (error) {
-                // throw Error;
-                response.status(401).json({ error: "wrong credentials" });
+                response.status(401).json({ error: error.message });
                 return;
             }
             // @ts-ignore
@@ -85,14 +95,44 @@ const authUser = (request, response) => {
                     return;
                 }
                 const token = crypto_1.default.randomBytes(64).toString("hex");
-                pool_1.default.query("UPDATE users SET token = $1 WHERE username = $2 AND password = $3", [token, username, password], (error, results) => {
+                // get IV from database
+                pool_1.default.query("SELECT * FROM users WHERE username = $1", [username], (error, results) => {
+                    var _a, _b;
                     if (error) {
-                        // throw Error;
-                        response.status(200).json({ error: error.message });
+                        response.status(401).json({ error: error.message });
                         return;
                     }
-                    response.status(200).json({ token: token });
-                    return;
+                    let iv = "";
+                    if ((_a = results.rows[0]) === null || _a === void 0 ? void 0 : _a.password) {
+                        if (/\:/.test((_b = results.rows[0]) === null || _b === void 0 ? void 0 : _b.password)) {
+                            iv = results.rows[0].password.split(":")[0];
+                        }
+                        else {
+                            response.status(401).json({ error: "Unable to retrieve IV" });
+                        }
+                    }
+                    else {
+                        response.status(401).json({ error: "Unable to retrieve IV" });
+                        return;
+                    }
+                    (() => __awaiter(void 0, void 0, void 0, function* () {
+                        var _c;
+                        const userHashedPassword = yield (0, hashWithIV_1.default)(password, iv);
+                        if (userHashedPassword === ((_c = results.rows[0]) === null || _c === void 0 ? void 0 : _c.password)) {
+                            pool_1.default.query("UPDATE users SET token = $1 WHERE username = $2 AND password = $3", [token, username, userHashedPassword], (error, results) => {
+                                if (error) {
+                                    response.status(401).json({ error: error.message });
+                                    return;
+                                }
+                                response.status(200).json({ token: token });
+                                return;
+                            });
+                        }
+                        else {
+                            response.status(401).json({ error: "wrong credentials" });
+                            return;
+                        }
+                    }))();
                 });
             }
             else {
@@ -162,14 +202,14 @@ const getUserPosts = (request, response) => {
 exports.getUserPosts = getUserPosts;
 const createUserPost = (request, response) => {
     const { title, post } = request.body;
-    const userID = request === null || request === void 0 ? void 0 : request.headers["user_id"]; // check if not null
+    const userID = request === null || request === void 0 ? void 0 : request.headers["user_id"]; // this header is internal, set by authMiddleware
     if (userID) {
         pool_1.default.query("INSERT INTO posts (user_id, title, post) VALUES ($1, $2, $3)", [userID, title, post], (error, results) => {
             if (error) {
                 console.log(error);
                 return;
             }
-            response.status(200).send(`Done`);
+            response.status(200).send({ status: "Done" });
         });
     }
     else {
@@ -259,25 +299,36 @@ const signin = (request, response) => {
             response.status(401).send({ error: "This username is already taken" });
             return;
         }
-        /* TODO: Insert into database timestamp and user active false */
-        pool_1.default.query("INSERT INTO users (phone, email, username, password, first_name, last_name, middle_name, gender, country, profile_picture_url, rol, verification_code, verification_code_time, is_active, is_reported, is_blocked, bio) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)", [phone, email, username, password, firstName, lastName, middleName, gender, country, profilePictureUrl, rol, verificationCode, new Date(), isActive, isReported, isBlocked, bio], (error, results) => {
-            if (error) {
-                console.log(error);
-                response.status(401).send({ error: error.message });
-                return;
-            }
-            const subject = "Relax Social Network - Verification Code";
-            const data = `Welcome to Relax.
+        (() => __awaiter(void 0, void 0, void 0, function* () {
+            try {
+                const hashedPassword = yield (0, hash_1.default)(password);
+                /* TODO: Insert into database timestamp and user active false */
+                pool_1.default.query("INSERT INTO users (phone, email, username, password, first_name, last_name, middle_name, gender, country, profile_picture_url, rol, verification_code, verification_code_time, is_active, is_reported, is_blocked, bio) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)", [phone, email, username, hashedPassword, firstName, lastName, middleName, gender, country, profilePictureUrl, rol, verificationCode, new Date(), isActive, isReported, isBlocked, bio], (error, results) => {
+                    if (error) {
+                        console.log(error);
+                        response.status(401).send({ error: error.message });
+                        return;
+                    }
+                    const subject = "Relax Social Network - Verification Code";
+                    const data = `Welcome to Relax.
 
 Send us your verification code
 ${verificationCode}
 
 Have a great stance.
 `;
-            (0, sendMail_1.default)(email, subject, data);
-            response.status(200).send({ status: "Email send" });
-            return;
-        });
+                    (0, sendMail_1.default)(email, subject, data);
+                    response.status(200).send({ status: "Email send" });
+                    return;
+                });
+            }
+            catch (error) {
+                if (error instanceof Error) {
+                    response.status(401).send({ error: error.message });
+                }
+                return;
+            }
+        }))();
     });
 };
 exports.signin = signin;

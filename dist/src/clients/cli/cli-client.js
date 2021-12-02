@@ -65,21 +65,29 @@ const askSignin = () => {
 };
 const signin = (credentials) => {
     const { phone, email, username, password, firstName, lastName, middleName, gender, country, profilePictureUrl } = credentials;
-    const response = run(`curl --silent http://localhost:3000/signin -d 'phone=${phone}&email=${email}&username=${username}&password=${password}&firstName=${firstName}&lastName=${lastName}&middleName=${middleName}&gender=${gender}&country=${country}&profilePictureUrl=${profilePictureUrl}'`);
+    const response = run(`curl --silent http://localhost:3000/signin -d 'phone=${phone}&email=${escape(email)}&username=${escape(username)}&password=${escape(password)}&firstName=${escape(firstName)}&lastName=${escape(lastName)}&middleName=${escape(middleName)}&gender=${escape(gender)}&country=${escape(country)}&profilePictureUrl=${escape(profilePictureUrl)}'`);
     console.log("\n" + response);
 };
 const login = (usernameOrEmail, password) => {
     let response = "";
     if (/@/g.test(usernameOrEmail)) {
-        response = run(`curl --silent http://localhost:3000/auth -d 'email=${usernameOrEmail}&password=${password}'`);
+        response = run(`curl --silent http://localhost:3000/auth -d 'email=${escape(usernameOrEmail)}&password=${escape(password)}'`);
     }
     else {
-        response = run(`curl --silent http://localhost:3000/auth -d 'username=${usernameOrEmail}&password=${password}'`);
+        response = run(`curl --silent http://localhost:3000/auth -d 'username=${escape(usernameOrEmail)}&password=${escape(password)}'`);
     }
     console.log(response);
 };
 const verification = (verificationCode) => {
     const response = run(`curl --silent http://localhost:3000/verification -d "verificationCode=${verificationCode}"`);
+    console.log(response);
+};
+const testUsername = (username) => {
+    const response = run(`curl --silent 'http://localhost:3000/exists/${escape(username)}'`);
+    console.log(response);
+};
+const createPost = (title, post, token) => {
+    const response = run(`curl --silent http://localhost:3000/users/post/ -d 'title=${escape(title)}&post=${escape(post)}' -H 'Authorization: ${token}'`);
     console.log(response);
 };
 /*
@@ -122,6 +130,16 @@ const parseArguments = () => {
             case "login":
                 cli.login = true;
                 break;
+            case "testUsername":
+            case "username":
+                cli.username = true;
+                break;
+            case "createPost":
+            case "createpost":
+            case "CreatePost":
+            case "create-post":
+                cli.createPost = true;
+                break;
             case "h":
             case "help":
             case "Help":
@@ -132,9 +150,11 @@ const parseArguments = () => {
 signin            Creates an account
 verification      Activate an account
 login             Log into an account
+username          Test if username is already taken
+createPost        Create a new post
 
 Usage:
-  node cli-client.js sigin|verification|login
+  node cli-client.js sigin|verification|login|username|createPost
 `);
                 process.exit(0);
                 break;
@@ -160,5 +180,15 @@ else if (cli === null || cli === void 0 ? void 0 : cli.login) {
 else if (cli === null || cli === void 0 ? void 0 : cli.verification) {
     const verificationCode = +ask("Your Verification Code -> ");
     verification(verificationCode);
+}
+else if (cli === null || cli === void 0 ? void 0 : cli.username) {
+    const username = ask("Username -> ");
+    testUsername(username);
+}
+else if (cli === null || cli === void 0 ? void 0 : cli.createPost) {
+    const token = ask("Token -> ");
+    const title = ask("Title -> ");
+    const post = ask("Post -> ");
+    createPost(title, post, token);
 }
 /* </main> */
