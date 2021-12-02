@@ -139,34 +139,63 @@ const authUser = (request: Request, response: Response) => {
       }
     });
   } else /* email */ {
-    pool.query("SELECT * FROM users WHERE email = $1 AND password = $2", [email, password], (error, results) => {
+    pool.query("SELECT * FROM users WHERE email = $1"/* AND password = $2"*/, [email/*, password*/], (error, results) => {
       if (error) {
         // throw Error;
 	response.status(401).json({ error: "wrong credentials"});
 	return;
       }
-      
+     
       // @ts-ignore
       if (results?.rows[0]?.email === email) {
 	if (results?.rows[0]["is_active"] !== true) {
 	  response.status(401).json({ error: "Account not activated yet. Check your email for verification code"});
 	  return;
 	}
+
 	const token = crypto.randomBytes(64).toString("hex");
-        pool.query("UPDATE users SET token = $1 WHERE email = $2 AND password = $3", [token, email, password], (error, results) => {
+        
+        // get IV from database 
+        pool.query("SELECT * FROM users WHERE email = $1", [email], (error, results) => {
           if (error) {
-	    response.status(200).json({ error: error.message });
+	    response.status(401).json({ error: error.message });
+	    return;
+          }
+
+	  let iv = "";
+
+          if (results.rows[0]?.password) {
+            if (/\:/.test(results.rows[0]?.password)) {
+              iv = results.rows[0].password.split(":")[0];
+            } else {
+              response.status(401).json({ error: "Unable to retrieve IV" });
+            }
+          } else {
+            response.status(401).json({ error: "Unable to retrieve IV" });
             return;
           }
 
-          response.status(200).json({ token: token });
-	  return;
-        });
-      } else {
-        response.status(401).json({ error: "wrong credentials"});
-	return;
+          (async() => {
+            const userHashedPassword = await hashWithIV(password, iv);
+            if (userHashedPassword === results.rows[0]?.password) {
+              pool.query("UPDATE users SET token = $1 WHERE email = $2 AND password = $3", [token, email, userHashedPassword], (error, results) => {
+                if (error) {
+                  response.status(401).json({ error: error.message });
+                  return;
+                }
+
+                response.status(200).json({ token: token });
+                return;
+              });
+            } else {
+              response.status(401).json({ error: "wrong credentials" });
+              return;
+            }
+          })();
+	});
       }
-    }); 
+    });
+
   }
   return;
 }

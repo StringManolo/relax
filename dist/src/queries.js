@@ -142,7 +142,7 @@ const authUser = (request, response) => {
         });
     }
     else /* email */ {
-        pool_1.default.query("SELECT * FROM users WHERE email = $1 AND password = $2", [email, password], (error, results) => {
+        pool_1.default.query("SELECT * FROM users WHERE email = $1" /* AND password = $2"*/, [email /*, password*/], (error, results) => {
             var _a;
             if (error) {
                 // throw Error;
@@ -156,18 +156,45 @@ const authUser = (request, response) => {
                     return;
                 }
                 const token = crypto_1.default.randomBytes(64).toString("hex");
-                pool_1.default.query("UPDATE users SET token = $1 WHERE email = $2 AND password = $3", [token, email, password], (error, results) => {
+                // get IV from database 
+                pool_1.default.query("SELECT * FROM users WHERE email = $1", [email], (error, results) => {
+                    var _a, _b;
                     if (error) {
-                        response.status(200).json({ error: error.message });
+                        response.status(401).json({ error: error.message });
                         return;
                     }
-                    response.status(200).json({ token: token });
-                    return;
+                    let iv = "";
+                    if ((_a = results.rows[0]) === null || _a === void 0 ? void 0 : _a.password) {
+                        if (/\:/.test((_b = results.rows[0]) === null || _b === void 0 ? void 0 : _b.password)) {
+                            iv = results.rows[0].password.split(":")[0];
+                        }
+                        else {
+                            response.status(401).json({ error: "Unable to retrieve IV" });
+                        }
+                    }
+                    else {
+                        response.status(401).json({ error: "Unable to retrieve IV" });
+                        return;
+                    }
+                    (() => __awaiter(void 0, void 0, void 0, function* () {
+                        var _c;
+                        const userHashedPassword = yield (0, hashWithIV_1.default)(password, iv);
+                        if (userHashedPassword === ((_c = results.rows[0]) === null || _c === void 0 ? void 0 : _c.password)) {
+                            pool_1.default.query("UPDATE users SET token = $1 WHERE email = $2 AND password = $3", [token, email, userHashedPassword], (error, results) => {
+                                if (error) {
+                                    response.status(401).json({ error: error.message });
+                                    return;
+                                }
+                                response.status(200).json({ token: token });
+                                return;
+                            });
+                        }
+                        else {
+                            response.status(401).json({ error: "wrong credentials" });
+                            return;
+                        }
+                    }))();
                 });
-            }
-            else {
-                response.status(401).json({ error: "wrong credentials" });
-                return;
             }
         });
     }
