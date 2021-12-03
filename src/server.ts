@@ -3,6 +3,7 @@ import { HttpError } from "http-errors";
 import bodyParser from "body-parser";
 
 import authMiddleware from "./auth/authMiddleware";
+import corsMiddleware from "./auth/corsMiddleware"; // allow test localhost for dev
 
 import { 
   getAPIDoc,
@@ -35,6 +36,8 @@ const exit = (exitMsg: string) => {
 
 
 
+app.use(corsMiddleware); // allow test localhost for dev
+
 /* <main> */
 app.use(bodyParser.json()); // allow to easily get body arguments from requests
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -46,6 +49,8 @@ app.post("/verification", verificateCode);
 // TODO: validate verification code endpoint
 app.post("/auth", authUser); // request your token using credentials
 
+app.put("/users/bio", updateUserBio); // updates the user bio
+
 app.use(authMiddleware); // request token for next API endpoints
 
 app.get("/users", getUsers); // not finished endpoints: 
@@ -53,7 +58,6 @@ app.get("/users/:id", getUserById);
 app.post("/users", createUser); // test only
 app.put("/users/:id", updateUser);
 app.delete("/users/:id", deleteUser);
-app.put("/users/:id/:bio", updateUserBio);
 
 app.get("/users/:id/posts", getUserPosts); // Get all posts from an user
 app.post("/users/post", createUserPost); // Create a post from current user

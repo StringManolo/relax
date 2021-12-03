@@ -17,7 +17,8 @@ interface Cli {
   login?: boolean,
   verification?: boolean,
   username?: boolean,
-  createPost?: boolean
+  createPost?: boolean,
+  setBio?: boolean
 }
 
 const run = (args: string): string => {
@@ -129,6 +130,10 @@ const createPost = (title: string, post: string, token: string) => {
   console.log(response);
 }
 
+const setBio = (bio: string, token: string) => {
+  const response = run(`curl --silent http://localhost:3000/users/bio -d 'bio=${escape(bio)}' -X PUT -H 'Authorization: ${token}'`);
+  console.log(response);
+}
 
 /*
  app.get("/", getAPIDoc); // show how to use the API
@@ -186,6 +191,14 @@ const parseArguments = (): Cli => {
         cli.createPost = true;
       break;
 
+      case "bio":
+      case "setBio":
+      case "setbio":
+      case "updateBio":
+      case "updatebio":
+        cli.setBio = true;
+      break;
+
       case "h":
       case "help":
       case "Help":
@@ -198,9 +211,10 @@ verification      Activate an account
 login             Log into an account
 username          Test if username is already taken
 createPost        Create a new post
+setBio            Set user bio
 
 Usage:
-  node cli-client.js sigin|verification|login|username|createPost
+  node cli-client.js sigin|verification|login|username|createPost|setBio
 `);
         process.exit(0);
       break;
@@ -239,6 +253,10 @@ if (cli?.signin) {
   const title = ask("Title -> ");
   const post = ask("Post -> ");
   createPost(title, post, token);
+} else if (cli?.setBio) {
+  const token = ask("Token -> ");
+  const bio = ask("Bio -> ");
+  setBio(bio, token);
 }
 
 

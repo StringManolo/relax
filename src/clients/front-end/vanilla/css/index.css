@@ -1,0 +1,18 @@
+:root {
+  --color1: #34568b;
+  --color2: #e9e9e9;
+  --color3: #cb8b5d;
+}
+
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  text-align: middle;
+  text-size-adjust: none; /* Fix Android Big Text */
+  text-rendering: optimizeLegibility; /* Improve text */
+  margin-bottom: 14px; /* Some Android screens cover bottom viewport */
+  font-size: 2vw;
+  color: #333;
+  font-family: sans-serif;
+}

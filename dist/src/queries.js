@@ -27,45 +27,50 @@ const getUsers = (request, response) => {
         if (error) {
             throw error;
         }
-        response.status(200).json(results.rows);
+        response.status(200).json(results === null || results === void 0 ? void 0 : results.rows);
     });
 };
 exports.getUsers = getUsers;
 const getUserById = (request, response) => {
-    pool_1.default.query("SELECT * FROM users WHERE id = $1", [+request.params.id], (error, results) => {
+    var _a;
+    pool_1.default.query("SELECT * FROM users WHERE id = $1", [+((_a = request === null || request === void 0 ? void 0 : request.params) === null || _a === void 0 ? void 0 : _a.id)], (error, results) => {
         if (error) {
             throw error;
         }
-        response.status(200).json(results.rows);
+        response.status(200).json(results === null || results === void 0 ? void 0 : results.rows);
     });
 };
 exports.getUserById = getUserById;
 const createUser = (request, response) => {
     const { name, email } = request.body;
     pool_1.default.query("INSERT INTO users (name, email) VALUES ($1, $2) RETURNING id", [name, email], (error, results) => {
+        var _a;
         if (error) {
             throw error;
         }
-        response.status(201).send(`User added with ID: ${results.rows[0].id}`);
+        response.status(201).send(`User added with ID: ${(_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.id}`);
     });
 };
 exports.createUser = createUser;
 const updateUser = (request, response) => {
     const { name, email } = request.body;
     pool_1.default.query("UPDATE users SET name = $1, email = $2 WHERE id = $3", [name, email, +request.params.id], (error, results) => {
+        var _a;
         if (error) {
             throw error;
         }
-        response.status(200).send(`User modified with ID: ${+request.params.id}`);
+        response.status(200).send(`User modified with ID: ${+((_a = request === null || request === void 0 ? void 0 : request.params) === null || _a === void 0 ? void 0 : _a.id)}`);
     });
 };
 exports.updateUser = updateUser;
 const deleteUser = (request, response) => {
-    pool_1.default.query("DELETE FROM users WHERE id = $1", [+request.params.id], (error, results) => {
+    var _a;
+    pool_1.default.query("DELETE FROM users WHERE id = $1", [+((_a = request === null || request === void 0 ? void 0 : request.params) === null || _a === void 0 ? void 0 : _a.id)], (error, results) => {
+        var _a;
         if (error) {
             throw error;
         }
-        response.status(200).send(`User deleted with ID: ${+request.params.id}`);
+        response.status(200).send(`User deleted with ID: ${+((_a = request === null || request === void 0 ? void 0 : request.params) === null || _a === void 0 ? void 0 : _a.id)}`);
     });
 };
 exports.deleteUser = deleteUser;
@@ -83,28 +88,28 @@ const authUser = (request, response) => {
     }
     if (username) {
         pool_1.default.query("SELECT * FROM users WHERE username = $1" /* AND password = $2"*/, [username /*, password*/], (error, results) => {
-            var _a;
+            var _a, _b;
             if (error) {
                 response.status(401).json({ error: error.message });
                 return;
             }
             // @ts-ignore
             if (((_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.username) === username) {
-                if ((results === null || results === void 0 ? void 0 : results.rows[0]["is_active"]) !== true) {
+                if (((_b = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _b === void 0 ? void 0 : _b.is_active) !== true) {
                     response.status(401).json({ error: "Account not activated yet. Check your email for verification code" });
                     return;
                 }
                 const token = crypto_1.default.randomBytes(64).toString("hex");
                 // get IV from database
                 pool_1.default.query("SELECT * FROM users WHERE username = $1", [username], (error, results) => {
-                    var _a, _b;
+                    var _a;
                     if (error) {
                         response.status(401).json({ error: error.message });
                         return;
                     }
                     let iv = "";
-                    if ((_a = results.rows[0]) === null || _a === void 0 ? void 0 : _a.password) {
-                        if (/\:/.test((_b = results.rows[0]) === null || _b === void 0 ? void 0 : _b.password)) {
+                    if ((_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.password) {
+                        if (/\:/.test(results.rows[0].password)) {
                             iv = results.rows[0].password.split(":")[0];
                         }
                         else {
@@ -116,9 +121,9 @@ const authUser = (request, response) => {
                         return;
                     }
                     (() => __awaiter(void 0, void 0, void 0, function* () {
-                        var _c;
+                        var _b;
                         const userHashedPassword = yield (0, hashWithIV_1.default)(password, iv);
-                        if (userHashedPassword === ((_c = results.rows[0]) === null || _c === void 0 ? void 0 : _c.password)) {
+                        if (userHashedPassword === ((_b = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _b === void 0 ? void 0 : _b.password)) {
                             pool_1.default.query("UPDATE users SET token = $1 WHERE username = $2 AND password = $3", [token, username, userHashedPassword], (error, results) => {
                                 if (error) {
                                     response.status(401).json({ error: error.message });
@@ -143,7 +148,7 @@ const authUser = (request, response) => {
     }
     else /* email */ {
         pool_1.default.query("SELECT * FROM users WHERE email = $1" /* AND password = $2"*/, [email /*, password*/], (error, results) => {
-            var _a;
+            var _a, _b;
             if (error) {
                 // throw Error;
                 response.status(401).json({ error: "wrong credentials" });
@@ -151,21 +156,21 @@ const authUser = (request, response) => {
             }
             // @ts-ignore
             if (((_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.email) === email) {
-                if ((results === null || results === void 0 ? void 0 : results.rows[0]["is_active"]) !== true) {
+                if (((_b = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _b === void 0 ? void 0 : _b.is_active) !== true) {
                     response.status(401).json({ error: "Account not activated yet. Check your email for verification code" });
                     return;
                 }
                 const token = crypto_1.default.randomBytes(64).toString("hex");
                 // get IV from database 
                 pool_1.default.query("SELECT * FROM users WHERE email = $1", [email], (error, results) => {
-                    var _a, _b;
+                    var _a;
                     if (error) {
                         response.status(401).json({ error: error.message });
                         return;
                     }
                     let iv = "";
-                    if ((_a = results.rows[0]) === null || _a === void 0 ? void 0 : _a.password) {
-                        if (/\:/.test((_b = results.rows[0]) === null || _b === void 0 ? void 0 : _b.password)) {
+                    if ((_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.password) {
+                        if (/\:/.test(results.rows[0].password)) {
                             iv = results.rows[0].password.split(":")[0];
                         }
                         else {
@@ -177,9 +182,9 @@ const authUser = (request, response) => {
                         return;
                     }
                     (() => __awaiter(void 0, void 0, void 0, function* () {
-                        var _c;
+                        var _b;
                         const userHashedPassword = yield (0, hashWithIV_1.default)(password, iv);
-                        if (userHashedPassword === ((_c = results.rows[0]) === null || _c === void 0 ? void 0 : _c.password)) {
+                        if (userHashedPassword === ((_b = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _b === void 0 ? void 0 : _b.password)) {
                             pool_1.default.query("UPDATE users SET token = $1 WHERE email = $2 AND password = $3", [token, email, userHashedPassword], (error, results) => {
                                 if (error) {
                                     response.status(401).json({ error: error.message });
@@ -202,20 +207,22 @@ const authUser = (request, response) => {
 };
 exports.authUser = authUser;
 const updateUserBio = (request, response) => {
+    var _a;
     const { bio } = request.body;
-    pool_1.default.query("UPDATE users SET bio = $1 WHERE id = $2", [bio, +request.params.id], (error, results) => {
+    const userID = (_a = request === null || request === void 0 ? void 0 : request.headers) === null || _a === void 0 ? void 0 : _a.user_id; // this header is internal, set by authMiddleware
+    pool_1.default.query("UPDATE users SET bio = $1 WHERE id = $2", [bio, userID], (error, results) => {
         if (error) {
-            //throw error;
-            console.log(error);
+            response.status(401).send({ error: error.message });
             return;
         }
-        response.status(200).send(`Bio updated`);
+        response.status(200).send({ status: "Bio updated" });
     });
 };
 exports.updateUserBio = updateUserBio;
 /* POSTS (PUBLICACIONES) */
 const getUserPosts = (request, response) => {
-    const userID = request === null || request === void 0 ? void 0 : request.headers["user_id"];
+    var _a;
+    const userID = (_a = request === null || request === void 0 ? void 0 : request.headers) === null || _a === void 0 ? void 0 : _a.user_id;
     if (userID) {
         pool_1.default.query("SELECT * FROM posts WHERE user_id = $1 ORDER BY post_id DESC", [userID], (error, results) => {
             if (error) {
@@ -228,8 +235,9 @@ const getUserPosts = (request, response) => {
 };
 exports.getUserPosts = getUserPosts;
 const createUserPost = (request, response) => {
+    var _a;
     const { title, post } = request.body;
-    const userID = request === null || request === void 0 ? void 0 : request.headers["user_id"]; // this header is internal, set by authMiddleware
+    const userID = (_a = request === null || request === void 0 ? void 0 : request.headers) === null || _a === void 0 ? void 0 : _a.user_id; // this header is internal, set by authMiddleware
     if (userID) {
         pool_1.default.query("INSERT INTO posts (user_id, title, post) VALUES ($1, $2, $3)", [userID, title, post], (error, results) => {
             if (error) {
@@ -256,9 +264,15 @@ const signin = (request, response) => {
     const isReported = false;
     const isBlocked = false;
     const bio = "";
+    if (!phone) {
+        response.status(401).send({ error: "missing phone" });
+    }
     if (!/^\d+$/.test(phone)) {
         response.status(401).send({ error: "phone number not valid format" });
         return;
+    }
+    if (!email) {
+        response.status(401).send({ error: "missing email" });
     }
     if (!/^\S+@\S+\.\S+$/.test(email)) {
         response.status(401).send({ error: "email not valid format" });
@@ -267,6 +281,9 @@ const signin = (request, response) => {
     if (!/^\w+$/.test(username)) {
         response.status(401).send({ error: "username not valid format" });
         return;
+    }
+    if (!password) {
+        response.status(401).send({ error: "missing password" });
     }
     if (password.length < 8 || password.length > 100) {
         response.status(401).send({ error: "password is to short or to long" });
@@ -300,13 +317,22 @@ const signin = (request, response) => {
         response.status(401).send({ error: "middlename is to short after removing spaces" });
         return;
     }
+    if (!gender) {
+        response.status(401).send({ error: "missing gender" });
+    }
     if (gender !== "male" && gender !== "female" && gender !== "other") {
         response.status(401).send({ error: "chose 'male', 'female' or 'other'" });
         return;
     }
+    if (!country) {
+        response.status(401).send({ error: "missing country" });
+    }
     if (country.length > 100) {
         response.status(401).send({ error: "country is to long" });
         return;
+    }
+    if (!profilePictureUrl) {
+        // allow signin without picture ?
     }
     if (/javascript\:/gi.test(profilePictureUrl) || /data\:/gi.test(profilePictureUrl)) {
         response.status(401).send({ error: "hacking disabled" });
@@ -322,7 +348,7 @@ const signin = (request, response) => {
             response.status(401).send({ error: error.message });
             return;
         }
-        if (((_a = results.rows[0]) === null || _a === void 0 ? void 0 : _a.username) === username) {
+        if (((_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.username) === username) {
             response.status(401).send({ error: "This username is already taken" });
             return;
         }
@@ -332,7 +358,6 @@ const signin = (request, response) => {
                 /* TODO: Insert into database timestamp and user active false */
                 pool_1.default.query("INSERT INTO users (phone, email, username, password, first_name, last_name, middle_name, gender, country, profile_picture_url, rol, verification_code, verification_code_time, is_active, is_reported, is_blocked, bio) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)", [phone, email, username, hashedPassword, firstName, lastName, middleName, gender, country, profilePictureUrl, rol, verificationCode, new Date(), isActive, isReported, isBlocked, bio], (error, results) => {
                     if (error) {
-                        console.log(error);
                         response.status(401).send({ error: error.message });
                         return;
                     }
@@ -370,25 +395,26 @@ const verificateCode = (request, response) => {
         return;
     }
     pool_1.default.query("SELECT * FROM users WHERE verification_code = $1", [verificationCode], (error, results) => {
+        var _a, _b, _c, _d, _e, _f;
         if (error) {
             response.status(401).send({ error: error.message });
             return;
         }
-        if (results.rows[0]["is_active"] === true) {
+        if (((_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.is_active) === true) {
             response.status(401).send({ error: "Account already activated" });
             return;
         }
-        if (results.rows[0]["verification_code"]) {
+        if ((_b = results.rows[0]) === null || _b === void 0 ? void 0 : _b.verification_code) {
             // ver_cod_time check
-            if (results.rows[0]["verification_code_time"]) {
-                const codeGeneratedAt = results.rows[0]["verification_code_time"];
+            if ((_c = results.rows[0]) === null || _c === void 0 ? void 0 : _c.verification_code_time) {
+                const codeGeneratedAt = (_d = results.rows[0]) === null || _d === void 0 ? void 0 : _d.verification_code_time;
                 const timePassed = (+new Date() - +new Date(codeGeneratedAt));
                 if (timePassed > 86400000) { // 1 day in milliseconds
                     response.status(401).send({ error: "Verification code expired. Request a new one" });
                     return;
                 }
-                if (verificationCode === results.rows[0]["verification_code"]) {
-                    pool_1.default.query("UPDATE users SET is_active = $1 WHERE id = $2", [true, results.rows[0].id], (error, results) => {
+                if (verificationCode === ((_e = results.rows[0]) === null || _e === void 0 ? void 0 : _e.verification_code)) {
+                    pool_1.default.query("UPDATE users SET is_active = $1 WHERE id = $2", [true, (_f = results.rows[0]) === null || _f === void 0 ? void 0 : _f.id], (error, results) => {
                         if (error) {
                             response.status(401).send({ error: error.message });
                             return;
@@ -418,12 +444,12 @@ const testUsernameExists = (request, response) => {
     var _a;
     if ((_a = request === null || request === void 0 ? void 0 : request.params) === null || _a === void 0 ? void 0 : _a.username) {
         pool_1.default.query("SELECT * FROM users WHERE username = $1", [request.params.username], (error, results) => {
-            var _a;
+            var _a, _b;
             if (error) {
                 response.status(401).send({ error: error.message });
                 return;
             }
-            if (((_a = results.rows[0]) === null || _a === void 0 ? void 0 : _a.username) === request.params.username) {
+            if (((_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.username) === ((_b = request === null || request === void 0 ? void 0 : request.params) === null || _b === void 0 ? void 0 : _b.username)) {
                 response.status(200).send({ exists: true });
             }
             else {

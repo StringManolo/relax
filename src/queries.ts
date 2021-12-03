@@ -15,17 +15,17 @@ const getUsers = (request: Request, response: Response) => {
       throw error;
     }
 
-    response.status(200).json(results.rows);
+    response.status(200).json(results?.rows);
   });
 }
 
 const getUserById = (request: Request, response: Response) => {
-  pool.query("SELECT * FROM users WHERE id = $1", [+request.params.id], (error, results) => {
+  pool.query("SELECT * FROM users WHERE id = $1", [+request?.params?.id], (error, results) => {
     if (error) {
       throw error;
     }
 
-    response.status(200).json(results.rows);
+    response.status(200).json(results?.rows);
   });
 }
 
@@ -37,7 +37,7 @@ const createUser = (request: Request, response: Response) => {
       throw error;
     }
 
-    response.status(201).send(`User added with ID: ${results.rows[0].id}`);
+    response.status(201).send(`User added with ID: ${results?.rows[0]?.id}`);
   });
 }
 
@@ -49,17 +49,17 @@ const updateUser = (request: Request, response: Response) => {
       throw error;
     }
 
-    response.status(200).send(`User modified with ID: ${+request.params.id}`)
+    response.status(200).send(`User modified with ID: ${+request?.params?.id}`)
   });
 }
 
 const deleteUser = (request: Request, response: Response) => {
-  pool.query("DELETE FROM users WHERE id = $1", [+request.params.id], (error, results) => {
+  pool.query("DELETE FROM users WHERE id = $1", [+request?.params?.id], (error, results) => {
     if (error) {
       throw error;
     }
 
-    response.status(200).send(`User deleted with ID: ${+request.params.id}`)
+    response.status(200).send(`User deleted with ID: ${+request?.params?.id}`)
   });
 }
 
@@ -88,7 +88,7 @@ const authUser = (request: Request, response: Response) => {
 
       // @ts-ignore
       if (results?.rows[0]?.username === username) {
-	if (results?.rows[0]["is_active"] !== true) {
+	if (results?.rows[0]?.is_active !== true) {
           response.status(401).json({ error: "Account not activated yet. Check your email for verification code"});
 	  return;
 	}
@@ -104,8 +104,8 @@ const authUser = (request: Request, response: Response) => {
 
           let iv = "";
 
-          if (results.rows[0]?.password) {
-	    if (/\:/.test(results.rows[0]?.password)) {
+          if (results?.rows[0]?.password) {
+	    if (/\:/.test(results.rows[0].password)) {
               iv = results.rows[0].password.split(":")[0];
 	    } else {
               response.status(401).json({ error: "Unable to retrieve IV" });
@@ -117,7 +117,7 @@ const authUser = (request: Request, response: Response) => {
         
 	  (async() => {
             const userHashedPassword = await hashWithIV(password, iv);
-            if (userHashedPassword === results.rows[0]?.password) {
+            if (userHashedPassword === results?.rows[0]?.password) {
               pool.query("UPDATE users SET token = $1 WHERE username = $2 AND password = $3", [token, username, userHashedPassword], (error, results) => {
                 if (error) {
 	          response.status(401).json({ error: error.message });
@@ -148,7 +148,7 @@ const authUser = (request: Request, response: Response) => {
      
       // @ts-ignore
       if (results?.rows[0]?.email === email) {
-	if (results?.rows[0]["is_active"] !== true) {
+	if (results?.rows[0]?.is_active !== true) {
 	  response.status(401).json({ error: "Account not activated yet. Check your email for verification code"});
 	  return;
 	}
@@ -164,8 +164,8 @@ const authUser = (request: Request, response: Response) => {
 
 	  let iv = "";
 
-          if (results.rows[0]?.password) {
-            if (/\:/.test(results.rows[0]?.password)) {
+          if (results?.rows[0]?.password) {
+            if (/\:/.test(results.rows[0].password)) {
               iv = results.rows[0].password.split(":")[0];
             } else {
               response.status(401).json({ error: "Unable to retrieve IV" });
@@ -177,7 +177,7 @@ const authUser = (request: Request, response: Response) => {
 
           (async() => {
             const userHashedPassword = await hashWithIV(password, iv);
-            if (userHashedPassword === results.rows[0]?.password) {
+            if (userHashedPassword === results?.rows[0]?.password) {
               pool.query("UPDATE users SET token = $1 WHERE email = $2 AND password = $3", [token, email, userHashedPassword], (error, results) => {
                 if (error) {
                   response.status(401).json({ error: error.message });
@@ -202,14 +202,14 @@ const authUser = (request: Request, response: Response) => {
 
 const updateUserBio = (request: Request, response: Response) => {
   const { bio } = request.body;
-  pool.query("UPDATE users SET bio = $1 WHERE id = $2", [bio, +request.params.id], (error, results) => {
+  const userID = request?.headers?.user_id; // this header is internal, set by authMiddleware
+  pool.query("UPDATE users SET bio = $1 WHERE id = $2", [bio, userID], (error, results) => {
     if (error) {
-      //throw error;
-      console.log(error);
+      response.status(401).send({ error: error.message});
       return;
     }
 
-    response.status(200).send(`Bio updated`);
+    response.status(200).send({ status: "Bio updated" });
   });
 }
 
@@ -217,7 +217,7 @@ const updateUserBio = (request: Request, response: Response) => {
 
 /* POSTS (PUBLICACIONES) */
 const getUserPosts = (request: Request, response: Response) => {
-  const userID = request?.headers["user_id"]; 
+  const userID = request?.headers?.user_id;
 
   if (userID) {
     pool.query("SELECT * FROM posts WHERE user_id = $1 ORDER BY post_id DESC", [userID], (error, results) => {
@@ -234,7 +234,7 @@ const getUserPosts = (request: Request, response: Response) => {
 
 const createUserPost = (request: Request, response: Response) => {
   const { title, post } = request.body;
-  const userID = request?.headers["user_id"]; // this header is internal, set by authMiddleware
+  const userID = request?.headers?.user_id; // this header is internal, set by authMiddleware
 
   if (userID) {
     pool.query("INSERT INTO posts (user_id, title, post) VALUES ($1, $2, $3)", [userID, title, post], (error, results) => {
@@ -266,9 +266,17 @@ console.log("VER-CODE: " + verificationCode); // print in console for debug (avo
   const isBlocked = false;
   const bio = "";
 
+  if (!phone) {
+    response.status(401).send({ error: "missing phone" });
+  }
+
   if (!/^\d+$/.test(phone)) {
     response.status(401).send({ error: "phone number not valid format" });
     return;
+  }
+
+  if (!email) {
+    response.status(401).send({ error: "missing email" });
   }
 
   if (!/^\S+@\S+\.\S+$/.test(email)) {
@@ -279,6 +287,10 @@ console.log("VER-CODE: " + verificationCode); // print in console for debug (avo
   if (!/^\w+$/.test(username)) {
     response.status(401).send({ error: "username not valid format" });
     return;
+  }
+
+  if (!password) {
+    response.status(401).send({ error: "missing password" });
   }
 
   if (password.length < 8 || password.length > 100) {
@@ -319,14 +331,26 @@ console.log("VER-CODE: " + verificationCode); // print in console for debug (avo
     return;
   }
 
+  if (!gender) {
+    response.status(401).send({ error: "missing gender" });
+  }
+
   if (gender !== "male" && gender !== "female" && gender !== "other") {
     response.status(401).send({ error: "chose 'male', 'female' or 'other'" });
     return;
   }
 
+  if (!country) {
+    response.status(401).send({ error: "missing country" });
+  }
+
   if (country.length > 100) {
     response.status(401).send({ error: "country is to long" });
     return;
+  }
+
+  if (!profilePictureUrl) {
+    // allow signin without picture ?
   }
 
   if (/javascript\:/gi.test(profilePictureUrl) || /data\:/gi.test(profilePictureUrl)) {
@@ -345,7 +369,7 @@ console.log("VER-CODE: " + verificationCode); // print in console for debug (avo
       return;
     }
 
-    if (results.rows[0]?.username === username) {
+    if (results?.rows[0]?.username === username) {
       response.status(401).send({ error: "This username is already taken" });
       return;
     }
@@ -359,7 +383,6 @@ console.log("VER-CODE: " + verificationCode); // print in console for debug (avo
           "INSERT INTO users (phone, email, username, password, first_name, last_name, middle_name, gender, country, profile_picture_url, rol, verification_code, verification_code_time, is_active, is_reported, is_blocked, bio) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)",
           [phone, email, username, hashedPassword, firstName, lastName, middleName, gender, country, profilePictureUrl, rol, verificationCode, new Date(), isActive, isReported, isBlocked, bio], (error, results) => {
           if (error) {
-            console.log(error);
             response.status(401).send({ error: error.message });
             return;
           }
@@ -407,23 +430,23 @@ const verificateCode = (request: Request, response: Response) => {
       return
     }
 
-    if (results.rows[0]["is_active"] === true) {
+    if (results?.rows[0]?.is_active === true) {
       response.status(401).send({ error: "Account already activated" });
       return;
     }
 
-    if (results.rows[0]["verification_code"]) {
+    if (results.rows[0]?.verification_code) {
       // ver_cod_time check
-      if (results.rows[0]["verification_code_time"]) {
-	const codeGeneratedAt = results.rows[0]["verification_code_time"];
+      if (results.rows[0]?.verification_code_time) {
+	const codeGeneratedAt = results.rows[0]?.verification_code_time;
         const timePassed = (+new Date() - +new Date(codeGeneratedAt));
 	if (timePassed > 86_400_000) { // 1 day in milliseconds
           response.status(401).send({ error: "Verification code expired. Request a new one" });
 	  return;
 	}
 
-        if (verificationCode === results.rows[0]["verification_code"]) {
-          pool.query("UPDATE users SET is_active = $1 WHERE id = $2", [true, results.rows[0].id], (error, results) => { 
+        if (verificationCode === results.rows[0]?.verification_code) {
+          pool.query("UPDATE users SET is_active = $1 WHERE id = $2", [true, results.rows[0]?.id], (error, results) => { 
             if (error) {
               response.status(401).send({ error: error.message });
 	      return;
@@ -458,7 +481,7 @@ const testUsernameExists = (request: Request, response: Response) => {
 	return;
       }
 
-      if (results.rows[0]?.username === request.params.username) {
+      if (results?.rows[0]?.username === request?.params?.username) {
         response.status(200).send({ exists: true });
       } else {
         response.status(200).send({ exists: false });

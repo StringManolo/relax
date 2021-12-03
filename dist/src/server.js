@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const authMiddleware_1 = __importDefault(require("./auth/authMiddleware"));
+const corsMiddleware_1 = __importDefault(require("./auth/corsMiddleware")); // allow test localhost for dev
 const queries_1 = require("./queries");
 const app = (0, express_1.default)();
 const port = 3000;
@@ -13,6 +14,7 @@ const exit = (exitMsg) => {
     console.error(exitMsg);
     process.exit(-1);
 };
+app.use(corsMiddleware_1.default); // allow test localhost for dev
 /* <main> */
 app.use(body_parser_1.default.json()); // allow to easily get body arguments from requests
 app.use(body_parser_1.default.urlencoded({ extended: true }));
@@ -22,13 +24,13 @@ app.post("/signin", queries_1.signin); // register your account
 app.post("/verification", queries_1.verificateCode);
 // TODO: validate verification code endpoint
 app.post("/auth", queries_1.authUser); // request your token using credentials
+app.put("/users/bio", queries_1.updateUserBio); // updates the user bio
 app.use(authMiddleware_1.default); // request token for next API endpoints
 app.get("/users", queries_1.getUsers); // not finished endpoints: 
 app.get("/users/:id", queries_1.getUserById);
 app.post("/users", queries_1.createUser); // test only
 app.put("/users/:id", queries_1.updateUser);
 app.delete("/users/:id", queries_1.deleteUser);
-app.put("/users/:id/:bio", queries_1.updateUserBio);
 app.get("/users/:id/posts", queries_1.getUserPosts); // Get all posts from an user
 app.post("/users/post", queries_1.createUserPost); // Create a post from current user
 app.put("/users/post", queries_1.editUserPost); // Edit a post from current user
