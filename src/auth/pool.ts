@@ -2,10 +2,10 @@ import { Pool } from "pg";
 
 /* TODO: Strip for production, test and fill with real credentials */
 const pool = new Pool({
-  user: "stringmanolo",
+  user: "snradmin",
   host: "localhost",
   database: "snr",
-  password: "123456",
+  password: "tmp",
   port: 5432
 });
 

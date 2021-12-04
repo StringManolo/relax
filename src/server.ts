@@ -23,7 +23,8 @@ import {
 
   signin,
   verificateCode,
-  testUsernameExists
+  testUsernameExists,
+  getProfile
 } from "./queries";
 
 const app = express();
@@ -49,21 +50,29 @@ app.post("/verification", verificateCode);
 // TODO: validate verification code endpoint
 app.post("/auth", authUser); // request your token using credentials
 
+app.use(authMiddleware); // request token for next API endpoints
 app.put("/users/bio", updateUserBio); // updates the user bio
 
-app.use(authMiddleware); // request token for next API endpoints
 
+app.get("/profile", getProfile);
+app.get("/users/posts", getUserPosts);
+app.post("/users/post", createUserPost); // Create a post from current user
+
+
+
+/* Redesigning next endpoint: */
+/*
 app.get("/users", getUsers); // not finished endpoints: 
 app.get("/users/:id", getUserById);
 app.post("/users", createUser); // test only
 app.put("/users/:id", updateUser);
 app.delete("/users/:id", deleteUser);
 
-app.get("/users/:id/posts", getUserPosts); // Get all posts from an user
+// app.get("/users/:id/posts", getUserPosts); // Get all posts from an user
 app.post("/users/post", createUserPost); // Create a post from current user
 app.put("/users/post", editUserPost); // Edit a post from current user
 app.delete("/users/post", deleteUserPost); // Delete a post from current user;
-
+*/
 
 app.listen(port, () => {
   console.log("Server binded to localhost:" + port);

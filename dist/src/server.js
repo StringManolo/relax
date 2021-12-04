@@ -24,17 +24,24 @@ app.post("/signin", queries_1.signin); // register your account
 app.post("/verification", queries_1.verificateCode);
 // TODO: validate verification code endpoint
 app.post("/auth", queries_1.authUser); // request your token using credentials
-app.put("/users/bio", queries_1.updateUserBio); // updates the user bio
 app.use(authMiddleware_1.default); // request token for next API endpoints
-app.get("/users", queries_1.getUsers); // not finished endpoints: 
-app.get("/users/:id", queries_1.getUserById);
-app.post("/users", queries_1.createUser); // test only
-app.put("/users/:id", queries_1.updateUser);
-app.delete("/users/:id", queries_1.deleteUser);
-app.get("/users/:id/posts", queries_1.getUserPosts); // Get all posts from an user
+app.put("/users/bio", queries_1.updateUserBio); // updates the user bio
+app.get("/profile", queries_1.getProfile);
+app.get("/users/posts", queries_1.getUserPosts);
 app.post("/users/post", queries_1.createUserPost); // Create a post from current user
-app.put("/users/post", queries_1.editUserPost); // Edit a post from current user
-app.delete("/users/post", queries_1.deleteUserPost); // Delete a post from current user;
+/* Redesigning next endpoint: */
+/*
+app.get("/users", getUsers); // not finished endpoints:
+app.get("/users/:id", getUserById);
+app.post("/users", createUser); // test only
+app.put("/users/:id", updateUser);
+app.delete("/users/:id", deleteUser);
+
+// app.get("/users/:id/posts", getUserPosts); // Get all posts from an user
+app.post("/users/post", createUserPost); // Create a post from current user
+app.put("/users/post", editUserPost); // Edit a post from current user
+app.delete("/users/post", deleteUserPost); // Delete a post from current user;
+*/
 app.listen(port, () => {
     console.log("Server binded to localhost:" + port);
 });

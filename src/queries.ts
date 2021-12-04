@@ -12,7 +12,8 @@ const getAPIDoc = (request: Request, response: Response) => {
 const getUsers = (request: Request, response: Response) => {
   pool.query("SELECT * FROM users ORDER BY id ASC", (error, results) => {
     if (error) {
-      throw error;
+      response.status(401).send({ error: error.message });
+      return;
     }
 
     response.status(200).json(results?.rows);
@@ -22,7 +23,8 @@ const getUsers = (request: Request, response: Response) => {
 const getUserById = (request: Request, response: Response) => {
   pool.query("SELECT * FROM users WHERE id = $1", [+request?.params?.id], (error, results) => {
     if (error) {
-      throw error;
+      response.status(401).send({ error: error.message });
+      return;
     }
 
     response.status(200).json(results?.rows);
@@ -34,7 +36,8 @@ const createUser = (request: Request, response: Response) => {
 
   pool.query("INSERT INTO users (name, email) VALUES ($1, $2) RETURNING id", [name, email], (error, results) => {
     if (error) {
-      throw error;
+      response.status(401).send({ error: error.message });
+      return;
     }
 
     response.status(201).send(`User added with ID: ${results?.rows[0]?.id}`);
@@ -46,7 +49,8 @@ const updateUser = (request: Request, response: Response) => {
 
   pool.query("UPDATE users SET name = $1, email = $2 WHERE id = $3", [name, email, +request.params.id], (error, results) => {
     if (error) {
-      throw error;
+      response.status(401).send({ error: error.message });
+      return;
     }
 
     response.status(200).send(`User modified with ID: ${+request?.params?.id}`)
@@ -56,7 +60,8 @@ const updateUser = (request: Request, response: Response) => {
 const deleteUser = (request: Request, response: Response) => {
   pool.query("DELETE FROM users WHERE id = $1", [+request?.params?.id], (error, results) => {
     if (error) {
-      throw error;
+      response.status(401).send({ error: error.message });
+      return;
     }
 
     response.status(200).send(`User deleted with ID: ${+request?.params?.id}`)
@@ -492,7 +497,26 @@ const testUsernameExists = (request: Request, response: Response) => {
   }
 }
 
+const getProfile = (request: Request, response: Response) => {
+  const userID = request?.headers?.user_id; // this header is internal, set by authMiddleware
+  if (userID) {
+    pool.query("SELECT * FROM users WHERE id = $1", [userID], (error, results) => {
+      if (error) {
+	response.status(401).send({ error: error.message });
+	return;
+      }
 
+      if (results?.rows[0]?.id === userID) {
+        response.status(200).json(results.rows[0]);
+      } else {
+        response.status(401).send({ error: "User not found" });
+      }
+
+    });
+  } else {
+    response.status(401).send({ error: "Missing id" });
+  } 
+}
 
 export {
   getAPIDoc,
@@ -512,6 +536,7 @@ export {
 
   signin,
   verificateCode,
-  testUsernameExists
+  testUsernameExists,
+  getProfile
 }
 

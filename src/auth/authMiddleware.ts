@@ -7,6 +7,7 @@ const authMiddleware = (request: Request, response: Response, next: NextFunction
   if (token) {
     pool.query("SELECT * FROM users WHERE token = $1", [token], (error, results) => {
       if (error) {
+	response.status(401).send({ error: "wrong token"});
         return;
       }
 
@@ -14,11 +15,13 @@ const authMiddleware = (request: Request, response: Response, next: NextFunction
         request.headers["user_id"] = results.rows[0].id; // ugly way to pass id to next end point
         next();
       } else {
-        response.status(401).json({ error: "wrong token"});
+        response.status(401).send({ error: "wrong token"});
+	return;
       }
     });
   } else {
-    response.status(401).json({ error: "missing token"});
+    response.status(401).send({ error: "missing token"});
+    return;
   }
 }
 

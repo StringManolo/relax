@@ -6,15 +6,39 @@
   "scripts": {
     "compile": "npx stripc && tsc && npx stripc recover",
     "compile-dev": "tsc",
+
     "push": "bash ./scripts/push.sh",
-    "start": "if [ ! -d \"db\" ]; then initdb db; fi; sleep 3s; pg_ctl -D db -l db/log.txt start; node ./dist/src/server.js 2>&1 > /dev/null & echo 'Node server binded to http://localhost:3000'",
+
+    "start": "echo -e '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nWait a moment please...' && sleep 2s; if [ ! -d \"db\" ]; then initdb db; fi; sleep 3s; pg_ctl -D db -l db/log.txt start; sleep 3s; bash ./scripts/createDB.sh && node ./dist/src/server.js 2>&1 > /dev/null & echo a > /dev/null; echo -e 'Created USER snradmin\ncreated DATABASE snr\ncreated TABLE users\ncreated TABLE posts\nNode server binded to http://localhost:3000'",
+    "start-node": "node ./dist/src/server.js",
     "stop": "pg_ctl -D db stop; pkill -f 'node ./dist/src/server.js'",
+
     "showPgLogs": "cat db/log.txt | less",
     "deletePgLogs": "rm db/log.txt",
+
     "delete": "yes | rm ./db -r",
+
     "test-signin": "bash ./tests/api/signin-curl.sh",
-    "test-auth": "bash ./tests/api/auth-curl.sh",
+    "test-login": "bash ./tests/api/auth-curl.sh",
     "test-verification": "bash ./tests/api/verification-curl.sh",
+
+    "cli": "node ./dist/src/clients/cli/cli-client.js help",
+    "cli-signin": "node ./dist/src/clients/cli/cli-client.js signin",
+    "cli-verification": "node ./dist/src/clients/cli/cli-client.js verification",
+    "cli-login": "node ./dist/src/clients/cli/cli-client.js login",
+    "cli-username": "node ./dist/src/clients/cli/cli-client.js username",
+    "cli-createPost": "node ./dist/src/clients/cli/cli-client.js createPost",
+    "cli-setBio": "node ./dist/src/clients/cli/cli-client.js setBio",
+    "cli-getProfile": "node ./dist/src/clients/cli/cli-client.js getProfile",
+
+    "edit-server": "vim ./src/server.ts",
+    "edit-queries": "vim ./src/queries.ts",
+    "edit-cli": "vim ./src/clients/cli/cli-client.ts",
+    "edit-todo": "vim ./doc/TODO.md",
+    "edit-readme": "vim ./README.md",
+
+    "netcat": "nc -lvk 127.0.0.1 3000",
+
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

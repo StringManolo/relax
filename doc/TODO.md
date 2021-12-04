@@ -20,6 +20,7 @@
 + Add csfr tokens ? ❌
 + Add security headers like x-frame, policy, etc ❌
 + Use dom purify for front-end ❌
++ DO NOT ISSUE TOKENS OR VERIFICATION CODES THAT ALREADY HAS BEEN ISSUED ❌
 + Legal and Privacy stuff ❌
 + Registarion mark ❌
 + registrarion domain ❌

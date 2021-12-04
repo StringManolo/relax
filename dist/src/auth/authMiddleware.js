@@ -11,6 +11,7 @@ const authMiddleware = (request, response, next) => {
         pool_1.default.query("SELECT * FROM users WHERE token = $1", [token], (error, results) => {
             var _a;
             if (error) {
+                response.status(401).send({ error: "wrong token" });
                 return;
             }
             if ((_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.id) {
@@ -18,12 +19,14 @@ const authMiddleware = (request, response, next) => {
                 next();
             }
             else {
-                response.status(401).json({ error: "wrong token" });
+                response.status(401).send({ error: "wrong token" });
+                return;
             }
         });
     }
     else {
-        response.status(401).json({ error: "missing token" });
+        response.status(401).send({ error: "missing token" });
+        return;
     }
 };
 exports.default = authMiddleware;

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.testUsernameExists = exports.verificateCode = exports.signin = exports.deleteUserPost = exports.editUserPost = exports.createUserPost = exports.getUserPosts = exports.updateUserBio = exports.authUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = exports.getAPIDoc = void 0;
+exports.getProfile = exports.testUsernameExists = exports.verificateCode = exports.signin = exports.deleteUserPost = exports.editUserPost = exports.createUserPost = exports.getUserPosts = exports.updateUserBio = exports.authUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = exports.getAPIDoc = void 0;
 const pool_1 = __importDefault(require("./auth/pool"));
 const sendMail_1 = __importDefault(require("./auth/sendMail"));
 const hash_1 = __importDefault(require("./auth/hash"));
@@ -25,7 +25,8 @@ exports.getAPIDoc = getAPIDoc;
 const getUsers = (request, response) => {
     pool_1.default.query("SELECT * FROM users ORDER BY id ASC", (error, results) => {
         if (error) {
-            throw error;
+            response.status(401).send({ error: error.message });
+            return;
         }
         response.status(200).json(results === null || results === void 0 ? void 0 : results.rows);
     });
@@ -35,7 +36,8 @@ const getUserById = (request, response) => {
     var _a;
     pool_1.default.query("SELECT * FROM users WHERE id = $1", [+((_a = request === null || request === void 0 ? void 0 : request.params) === null || _a === void 0 ? void 0 : _a.id)], (error, results) => {
         if (error) {
-            throw error;
+            response.status(401).send({ error: error.message });
+            return;
         }
         response.status(200).json(results === null || results === void 0 ? void 0 : results.rows);
     });
@@ -46,7 +48,8 @@ const createUser = (request, response) => {
     pool_1.default.query("INSERT INTO users (name, email) VALUES ($1, $2) RETURNING id", [name, email], (error, results) => {
         var _a;
         if (error) {
-            throw error;
+            response.status(401).send({ error: error.message });
+            return;
         }
         response.status(201).send(`User added with ID: ${(_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.id}`);
     });
@@ -57,7 +60,8 @@ const updateUser = (request, response) => {
     pool_1.default.query("UPDATE users SET name = $1, email = $2 WHERE id = $3", [name, email, +request.params.id], (error, results) => {
         var _a;
         if (error) {
-            throw error;
+            response.status(401).send({ error: error.message });
+            return;
         }
         response.status(200).send(`User modified with ID: ${+((_a = request === null || request === void 0 ? void 0 : request.params) === null || _a === void 0 ? void 0 : _a.id)}`);
     });
@@ -68,7 +72,8 @@ const deleteUser = (request, response) => {
     pool_1.default.query("DELETE FROM users WHERE id = $1", [+((_a = request === null || request === void 0 ? void 0 : request.params) === null || _a === void 0 ? void 0 : _a.id)], (error, results) => {
         var _a;
         if (error) {
-            throw error;
+            response.status(401).send({ error: error.message });
+            return;
         }
         response.status(200).send(`User deleted with ID: ${+((_a = request === null || request === void 0 ? void 0 : request.params) === null || _a === void 0 ? void 0 : _a.id)}`);
     });
@@ -462,3 +467,26 @@ const testUsernameExists = (request, response) => {
     }
 };
 exports.testUsernameExists = testUsernameExists;
+const getProfile = (request, response) => {
+    var _a;
+    const userID = (_a = request === null || request === void 0 ? void 0 : request.headers) === null || _a === void 0 ? void 0 : _a.user_id; // this header is internal, set by authMiddleware
+    if (userID) {
+        pool_1.default.query("SELECT * FROM users WHERE id = $1", [userID], (error, results) => {
+            var _a;
+            if (error) {
+                response.status(401).send({ error: error.message });
+                return;
+            }
+            if (((_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.id) === userID) {
+                response.status(200).json(results.rows[0]);
+            }
+            else {
+                response.status(401).send({ error: "User not found" });
+            }
+        });
+    }
+    else {
+        response.status(401).send({ error: "Missing id" });
+    }
+};
+exports.getProfile = getProfile;
