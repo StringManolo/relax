@@ -1,3 +1,4 @@
++ STRIP CREDENTIALS FROM auth/pool.ts before PROD ❌
 + Create API documentation. ❌
 + Check if user already exists. ❌
 + Use OAUTH2 ? ❌
@@ -14,7 +15,7 @@
 + Add verification code expiration time ✅
 + Add rate limit for verificationCode tries ❌
 + Add rate limit for verificationCode (ban email 24h after 10 tries) ❌
-+ Request account (is_active === true) for /auth endpoint before token generation
++ Request account (is_active === true) for /auth endpoint before token generation ❌
 + Maybe mutiple accounts can be activated if same verification code is issued to 2 users. Check
 + Add captcha to forms ? ❌
 + Add csfr tokens ? ❌

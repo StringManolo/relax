@@ -167,15 +167,66 @@ const verification = (verificationCode) => {
 };
 const testUsername = (username) => {
     const response = run(`curl --silent 'http://localhost:3000/exists/${encodeComponent(username)}'`);
-    console.log(response);
+    try {
+        const parsed = JSON.parse(response);
+        if ((parsed === null || parsed === void 0 ? void 0 : parsed.exists) === true) {
+            console.log("\n" + username + " already taken");
+        }
+        else if ((parsed === null || parsed === void 0 ? void 0 : parsed.exists) === false) {
+            console.log("\n" + username + " is available");
+        }
+        else if (parsed === null || parsed === void 0 ? void 0 : parsed.error) {
+            console.log("\nError: " + parsed.error);
+        }
+        else {
+            console.log("\n" + parsed);
+        }
+        return undefined;
+    }
+    catch (error) {
+    }
+    console.log("\n" + response);
+    return undefined;
 };
 const createPost = (title, post, token) => {
     const response = run(`curl --silent http://localhost:3000/users/post/ -d 'title=${encodeComponent(title)}&post=${encodeComponent(post)}' -H 'Authorization: ${token}'`);
-    console.log(response);
+    try {
+        const parsed = JSON.parse(response);
+        if (parsed === null || parsed === void 0 ? void 0 : parsed.status) {
+            console.log("\n" + parsed.status);
+        }
+        else if (parsed === null || parsed === void 0 ? void 0 : parsed.error) {
+            console.log("\nError: " + parsed.error);
+        }
+        else {
+            console.log("\n" + parsed);
+        }
+        return undefined;
+    }
+    catch (error) {
+    }
+    console.log("\n" + response);
+    return undefined;
 };
 const setBio = (bio, token) => {
     const response = run(`curl --silent http://localhost:3000/users/bio -d 'bio=${encodeComponent(bio)}' -X PUT -H 'Authorization: ${token}'`);
-    console.log(response);
+    try {
+        const parsed = JSON.parse(response);
+        if (parsed === null || parsed === void 0 ? void 0 : parsed.status) {
+            console.log("\n" + parsed.status);
+        }
+        else if (parsed === null || parsed === void 0 ? void 0 : parsed.error) {
+            console.log("\n" + parsed.error);
+        }
+        else {
+            console.log("\n" + parsed);
+        }
+        return undefined;
+    }
+    catch (error) {
+    }
+    console.log("\n" + response);
+    return undefined;
 };
 const getProfile = (token) => {
     const responseProfile = run(`curl --silent http://localhost:3000/profile -H 'Authorization: ${token}'`);
@@ -194,7 +245,7 @@ const getProfile = (token) => {
     }
     console.log(`
 	
-@${username} 
+${decodeComponent(first_name)} @${username} 
 
     picture: ${decodeComponent(profile_picture_url)}
     bio: ${decodeComponent(bio)} 
@@ -297,40 +348,50 @@ Usage:
 };
 /* <main> */
 const cli = parseArguments();
-if (cli === null || cli === void 0 ? void 0 : cli.signin) {
-    const data = askSignin();
-    signin(data);
-}
-else if (cli === null || cli === void 0 ? void 0 : cli.login) {
-    const userOrEmail = +ask("1 - Login Username\n2 - Login Email\nYour choice -> ");
-    if (userOrEmail === 1) {
-        login(ask("Username -> "), ask("Password -> "));
+try { // catch connection errors
+    if (cli === null || cli === void 0 ? void 0 : cli.signin) {
+        const data = askSignin();
+        signin(data);
+    }
+    else if (cli === null || cli === void 0 ? void 0 : cli.login) {
+        const userOrEmail = +ask("1 - Login Username\n2 - Login Email\nYour choice -> ");
+        if (userOrEmail === 1) {
+            login(ask("Username -> "), ask("Password -> "));
+        }
+        else {
+            login(ask("Email -> "), ask("Password -> "));
+        }
+    }
+    else if (cli === null || cli === void 0 ? void 0 : cli.verification) {
+        const verificationCode = +ask("Your Verification Code -> ");
+        verification(verificationCode);
+    }
+    else if (cli === null || cli === void 0 ? void 0 : cli.username) {
+        const username = ask("Username -> ");
+        testUsername(username);
+    }
+    else if (cli === null || cli === void 0 ? void 0 : cli.createPost) {
+        const token = ask("Token -> ");
+        const title = ask("Title -> ");
+        const post = ask("Post -> ");
+        createPost(title, post, token);
+    }
+    else if (cli === null || cli === void 0 ? void 0 : cli.setBio) {
+        const token = ask("Token -> ");
+        const bio = ask("Bio -> ");
+        setBio(bio, token);
+    }
+    else if (cli === null || cli === void 0 ? void 0 : cli.getProfile) {
+        const token = ask("Token -> ");
+        getProfile(token);
     }
     else {
-        login(ask("Email -> "), ask("Password -> "));
+        console.log("\nusage: node cli-client.js help");
     }
 }
-else if (cli === null || cli === void 0 ? void 0 : cli.verification) {
-    const verificationCode = +ask("Your Verification Code -> ");
-    verification(verificationCode);
-}
-else if (cli === null || cli === void 0 ? void 0 : cli.username) {
-    const username = ask("Username -> ");
-    testUsername(username);
-}
-else if (cli === null || cli === void 0 ? void 0 : cli.createPost) {
-    const token = ask("Token -> ");
-    const title = ask("Title -> ");
-    const post = ask("Post -> ");
-    createPost(title, post, token);
-}
-else if (cli === null || cli === void 0 ? void 0 : cli.setBio) {
-    const token = ask("Token -> ");
-    const bio = ask("Bio -> ");
-    setBio(bio, token);
-}
-else if (cli === null || cli === void 0 ? void 0 : cli.getProfile) {
-    const token = ask("Token -> ");
-    getProfile(token);
+catch (error) {
+    if (error instanceof Error) {
+        console.log("\nError:\n\n" + error.message + "\n\nMake sure the server is binded to localhost:3000\nhint: $ npm stop; npm start");
+    }
 }
 /* </main> */

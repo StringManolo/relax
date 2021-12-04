@@ -51,4 +51,53 @@ CREATE TABLE posts (
       REFERENCES users(ID)
 );
 
+
+CREATE TABLE subscribers (
+  suscribers_id SERIAL PRIMARY KEY,
+  user_id INT,
+  subscriber_user_id INT,
+  subscriber_first_name VARCHAR(20),
+  subscriber_username VARCHAR(100),
+  CONSTRAINT fk_id
+    FOREIGN KEY(user_id)
+      REFERENCES users(ID)
+);
+
+
+CREATE TABLE friends (
+  friends_id SERIAL PRIMARY KEY,
+  user_id INT,
+  friend_user_id INT,
+  friend_first_name VARCHAR(20),
+  friend_username VARCHAR(100),
+  CONSTRAINT fk_id
+    FOREIGN KEY(user_id)
+      REFERENCES users(ID)
+);
+
+
+CREATE TABLE groups (
+  group_id SERIAL PRIMARY KEY,
+  creator_id INT,
+  title VARCHAR(120),
+  bio VARCHAR(255),
+  timestamp TIMESTAMP default CURRENT_TIMESTAMP,
+  CONSTRAINT fk_id
+    FOREIGN KEY(creator_id)
+      REFERENCES users(ID)
+);
+
+
+CREATE TABLE groupMembers (
+  group_id INT,
+  user_id INT,
+  CONSTRAINT fk_user_id
+    FOREIGN KEY(user_id)
+      REFERENCES users(ID),
+  CONSTRAINT fk_group_id
+    FOREIGN KEY(group_id)
+      REFERENCES groups(group_id)
+);
+
+
 ' > dev/null ;
