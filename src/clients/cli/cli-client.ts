@@ -19,7 +19,8 @@ interface Cli {
   username?: boolean,
   createPost?: boolean,
   setBio?: boolean,
-  getProfile?: boolean
+  getProfile?: boolean,
+  search?: boolean
 }
 
 const run = (args: string): string => {
@@ -301,32 +302,63 @@ Posts:
 ${decodeComponent(posts.length > 1 ? posts.join("") : posts.toString())}
 `);
 
-  // add posts here
 }
 
-/*
- app.get("/", getAPIDoc); // show how to use the API
+const search = (searchPattern: string, token: string) => {
+  const response = run(`curl --silent http://localhost:3000/search/${encodeComponent(searchPattern)} -H 'Authorization: ${token}'`);
+ 
+    // TODO: decodeComponents
+  try {
+    const parsed = JSON.parse(response);
+    if (parsed?.error) {
+      console.log("\nError: " + parsed.error);
+      return undefined;
+    } else {
+      let aux = "Results:";
+      if (parsed?.users) {
+	if (Array.isArray(parsed.users)) {
+	  for (let i = 0; i < parsed.users.length; ++i) {
+            aux += `\n + ${decodeComponent(parsed.users[i]?.first_name)} @${decodeComponent(parsed.users[i]?.username)}`;
+	  }
+        } else {
+	  aux += `\n + ${decodeComponent(parsed.users?.first_name)} @${decodeComponent(parsed.users?.username)}`;
+	}
+      }
 
-app.post("/signin", signin); // register your account
-app.post("/verification", verificateCode);
-// TODO: validate verification code endpoint
-app.post("/auth", authUser); // request your token using credentials
+      if (parsed?.posts) {
+        if (Array.isArray(parsed.posts)) {
+          for (let i = 0; i < parsed.posts.length; ++i) {
+            aux += `\n + ( ${decodeComponent(parsed.posts[i]?.title)} ) `;
+	  }
+	} else {
+          aux += `\n + ( ${decodeComponent(parsed.posts?.title)} ) `;
+	}
+      }
 
-app.use(authMiddleware); // request token for next API endpoints
+      if (parsed?.groups) {
+        if (Array.isArray(parsed.groups)) {
+          for (let i = 0; i < parsed.groups.length; ++i) {
+            aux += `\n + ${decodeComponent(parsed.groups[i]?.title)}: ${decodeComponent(parsed.groups[i]?.bio.substr(0, 20))}... `;
+	  }
+	} else {
+	  aux += `\n + ${decodeComponent(parsed.groups?.title)}: ${decodeComponent(parsed.groups?.title.substr(0, 20))}... `;
+	}
+      }
 
-app.get("/users", getUsers);
-app.get("/users/:id", getUserById);
-app.post("/users", createUser); // test only
-app.put("/users/:id", updateUser);
-app.delete("/users/:id", deleteUser);
-app.put("/users/:id/:bio", updateUserBio);
+      if (aux.length > 9) {
+        console.log("\n" + aux);
+        return undefined;
+      }
+    }
 
-app.get("/users/:id/posts", getUserPosts); // Get all posts from an user
-app.post("/users/post", createUserPost); // Create a post from current user
-app.put("/users/post", editUserPost); // Edit a post from current user
-app.delete("/users/post", deleteUserPost); // Delete a post from current user;
+  } catch (error) {
 
-*/
+  }
+
+  console.log("\n" + decodeComponent(response));
+  return undefined;
+}
+
 
 const parseArguments = (): Cli => {
   const cli: Cli = {} as any;
@@ -374,6 +406,11 @@ const parseArguments = (): Cli => {
         cli.getProfile = true;
       break;
 
+      case "search":
+      case "find":
+        cli.search = true;
+      break;
+
       case "h":
       case "help":
       case "Help":
@@ -388,9 +425,10 @@ username          Test if username is already taken
 createPost        Create a new post
 setBio            Set user bio
 getProfile        Get your own profile
+search            Search users and groups by name
 
 Usage:
-  node cli-client.js sigin|verification|login|username|createPost|setBio|getProfile
+  node cli-client.js sigin|verification|login|username|createPost|setBio|getProfile|search
 `);
         process.exit(0);
       break;
@@ -438,6 +476,10 @@ try { // catch connection errors
   } else if (cli?.getProfile) {
     const token = ask("Token -> ");
     getProfile(token);
+  } else if (cli?.search) {
+    const token = ask("Token -> ");
+    const searchPattern = ask("Search -> ");
+    search(searchPattern, token);
   } else {
     console.log("\nusage: node cli-client.js help");
   }

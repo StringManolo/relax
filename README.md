@@ -26,6 +26,7 @@
 | npm run cli-createPost | Create a user post using the terminal |
 | npm run cli-setBio | Set bio (a short personal description of the user) using the terminal |
 | npm run cli-getProfile | Show user info (not including credentials and metadata) and posts using the terminal |
+| npm run cli-search | Search a pattern in the database using the terminal |
 | npm run edit-server | Edit the server typescript file using vim |
 | npm run edit-queries | Edit the queries typescript file using vim |
 | npm run edit-cli | Edit the cli typescript file using vim |

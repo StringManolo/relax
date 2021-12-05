@@ -258,31 +258,60 @@ ${decodeComponent(first_name)} @${username}
 Posts:
 ${decodeComponent(posts.length > 1 ? posts.join("") : posts.toString())}
 `);
-    // add posts here
 };
-/*
- app.get("/", getAPIDoc); // show how to use the API
-
-app.post("/signin", signin); // register your account
-app.post("/verification", verificateCode);
-// TODO: validate verification code endpoint
-app.post("/auth", authUser); // request your token using credentials
-
-app.use(authMiddleware); // request token for next API endpoints
-
-app.get("/users", getUsers);
-app.get("/users/:id", getUserById);
-app.post("/users", createUser); // test only
-app.put("/users/:id", updateUser);
-app.delete("/users/:id", deleteUser);
-app.put("/users/:id/:bio", updateUserBio);
-
-app.get("/users/:id/posts", getUserPosts); // Get all posts from an user
-app.post("/users/post", createUserPost); // Create a post from current user
-app.put("/users/post", editUserPost); // Edit a post from current user
-app.delete("/users/post", deleteUserPost); // Delete a post from current user;
-
-*/
+const search = (searchPattern, token) => {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+    const response = run(`curl --silent http://localhost:3000/search/${encodeComponent(searchPattern)} -H 'Authorization: ${token}'`);
+    // TODO: decodeComponents
+    try {
+        const parsed = JSON.parse(response);
+        if (parsed === null || parsed === void 0 ? void 0 : parsed.error) {
+            console.log("\nError: " + parsed.error);
+            return undefined;
+        }
+        else {
+            let aux = "Results:";
+            if (parsed === null || parsed === void 0 ? void 0 : parsed.users) {
+                if (Array.isArray(parsed.users)) {
+                    for (let i = 0; i < parsed.users.length; ++i) {
+                        aux += `\n + ${decodeComponent((_a = parsed.users[i]) === null || _a === void 0 ? void 0 : _a.first_name)} @${decodeComponent((_b = parsed.users[i]) === null || _b === void 0 ? void 0 : _b.username)}`;
+                    }
+                }
+                else {
+                    aux += `\n + ${decodeComponent((_c = parsed.users) === null || _c === void 0 ? void 0 : _c.first_name)} @${decodeComponent((_d = parsed.users) === null || _d === void 0 ? void 0 : _d.username)}`;
+                }
+            }
+            if (parsed === null || parsed === void 0 ? void 0 : parsed.posts) {
+                if (Array.isArray(parsed.posts)) {
+                    for (let i = 0; i < parsed.posts.length; ++i) {
+                        aux += `\n + ( ${decodeComponent((_e = parsed.posts[i]) === null || _e === void 0 ? void 0 : _e.title)} ) `;
+                    }
+                }
+                else {
+                    aux += `\n + ( ${decodeComponent((_f = parsed.posts) === null || _f === void 0 ? void 0 : _f.title)} ) `;
+                }
+            }
+            if (parsed === null || parsed === void 0 ? void 0 : parsed.groups) {
+                if (Array.isArray(parsed.groups)) {
+                    for (let i = 0; i < parsed.groups.length; ++i) {
+                        aux += `\n + ${decodeComponent((_g = parsed.groups[i]) === null || _g === void 0 ? void 0 : _g.title)}: ${decodeComponent((_h = parsed.groups[i]) === null || _h === void 0 ? void 0 : _h.bio.substr(0, 20))}... `;
+                    }
+                }
+                else {
+                    aux += `\n + ${decodeComponent((_j = parsed.groups) === null || _j === void 0 ? void 0 : _j.title)}: ${decodeComponent((_k = parsed.groups) === null || _k === void 0 ? void 0 : _k.title.substr(0, 20))}... `;
+                }
+            }
+            if (aux.length > 9) {
+                console.log("\n" + aux);
+                return undefined;
+            }
+        }
+    }
+    catch (error) {
+    }
+    console.log("\n" + decodeComponent(response));
+    return undefined;
+};
 const parseArguments = () => {
     const cli = {};
     for (let i = 0; i < process.argv.length; ++i) {
@@ -322,6 +351,10 @@ const parseArguments = () => {
             case "getprofile":
                 cli.getProfile = true;
                 break;
+            case "search":
+            case "find":
+                cli.search = true;
+                break;
             case "h":
             case "help":
             case "Help":
@@ -336,9 +369,10 @@ username          Test if username is already taken
 createPost        Create a new post
 setBio            Set user bio
 getProfile        Get your own profile
+search            Search users and groups by name
 
 Usage:
-  node cli-client.js sigin|verification|login|username|createPost|setBio|getProfile
+  node cli-client.js sigin|verification|login|username|createPost|setBio|getProfile|search
 `);
                 process.exit(0);
                 break;
@@ -384,6 +418,11 @@ try { // catch connection errors
     else if (cli === null || cli === void 0 ? void 0 : cli.getProfile) {
         const token = ask("Token -> ");
         getProfile(token);
+    }
+    else if (cli === null || cli === void 0 ? void 0 : cli.search) {
+        const token = ask("Token -> ");
+        const searchPattern = ask("Search -> ");
+        search(searchPattern, token);
     }
     else {
         console.log("\nusage: node cli-client.js help");

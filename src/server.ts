@@ -24,7 +24,9 @@ import {
   signin,
   verificateCode,
   testUsernameExists,
-  getProfile
+  getProfile,
+
+  search
 } from "./queries";
 
 const app = express();
@@ -57,7 +59,7 @@ app.put("/users/bio", updateUserBio); // updates the user bio
 app.get("/profile", getProfile);
 app.get("/users/posts", getUserPosts);
 app.post("/users/post", createUserPost); // Create a post from current user
-
+app.get("/search/:search", search);
 
 
 /* Redesigning next endpoint: */

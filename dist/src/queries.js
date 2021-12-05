@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProfile = exports.testUsernameExists = exports.verificateCode = exports.signin = exports.deleteUserPost = exports.editUserPost = exports.createUserPost = exports.getUserPosts = exports.updateUserBio = exports.authUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = exports.getAPIDoc = void 0;
+exports.search = exports.getProfile = exports.testUsernameExists = exports.verificateCode = exports.signin = exports.deleteUserPost = exports.editUserPost = exports.createUserPost = exports.getUserPosts = exports.updateUserBio = exports.authUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = exports.getAPIDoc = void 0;
 const pool_1 = __importDefault(require("./auth/pool"));
 const sendMail_1 = __importDefault(require("./auth/sendMail"));
 const hash_1 = __importDefault(require("./auth/hash"));
@@ -490,3 +490,54 @@ const getProfile = (request, response) => {
     }
 };
 exports.getProfile = getProfile;
+const search = (request, response) => {
+    var _a, _b;
+    const userID = (_a = request === null || request === void 0 ? void 0 : request.headers) === null || _a === void 0 ? void 0 : _a.user_id;
+    if (!userID) {
+        response.status(401).send({ error: "You can't search without being logged in" });
+        return;
+    }
+    const searchPattern = (_b = request === null || request === void 0 ? void 0 : request.params) === null || _b === void 0 ? void 0 : _b.search;
+    if (!searchPattern) {
+        response.status(401).send({ error: "Missing search argument" });
+    }
+    pool_1.default.query("SELECT * FROM users WHERE username ILIKE $1", [`%${searchPattern}%`], (error, results) => {
+        if (error) {
+            response.status(401).send({ error: error.message });
+            return;
+        }
+        const obj = {};
+        if (results === null || results === void 0 ? void 0 : results.rows[0]) {
+            // TODO: Filter results from posts titles to only posts marked as public OR from public accounts
+            obj.users = results.rows[0];
+            //response.status(200).json(results.rows);
+            //return;
+        }
+        pool_1.default.query("SELECT * FROM groups WHERE title ILIKE $1", [`%${searchPattern}%`], (error, results) => {
+            if (error) {
+                response.status(401).send({ error: error.message });
+                return;
+            }
+            if (results === null || results === void 0 ? void 0 : results.rows[0]) {
+                obj.groups = results.rows[0];
+            }
+            pool_1.default.query("SELECT * FROM posts WHERE title ILIKE $1", [`%${searchPattern}%`], (error, results) => {
+                if (error) {
+                    response.status(401).send({ error: error.message });
+                    return;
+                }
+                if (results === null || results === void 0 ? void 0 : results.rows[0]) {
+                    obj.posts = results.rows[0];
+                }
+                if (Object.keys(obj).length === 0) {
+                    response.status(401).send({ error: "No results" });
+                }
+                else {
+                    response.status(200).json(obj);
+                    return;
+                }
+            });
+        });
+    });
+};
+exports.search = search;

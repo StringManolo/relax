@@ -518,6 +518,65 @@ const getProfile = (request: Request, response: Response) => {
   } 
 }
 
+const search = (request: Request, response: Response) => {
+  const userID = request?.headers?.user_id;
+  if (!userID) {
+    response.status(401).send({ error: "You can't search without being logged in" });
+    return;
+  }
+
+  const searchPattern = request?.params?.search;
+  if (!searchPattern) {
+    response.status(401).send({ error: "Missing search argument" });
+  }
+
+
+  pool.query("SELECT * FROM users WHERE username ILIKE $1", [`%${searchPattern}%`], (error, results) => {
+    if (error) {
+      response.status(401).send({ error: error.message });
+      return;
+    }
+
+    const obj = {} as any;
+
+    if (results?.rows[0]) {
+      // TODO: Filter results from posts titles to only posts marked as public OR from public accounts
+      obj.users = results.rows[0];
+      //response.status(200).json(results.rows);
+      //return;
+    } 
+
+    pool.query("SELECT * FROM groups WHERE title ILIKE $1", [`%${searchPattern}%`], (error, results) => {
+      if (error) {
+        response.status(401).send({ error: error.message })
+	return;
+      }
+
+      if (results?.rows[0]) {
+        obj.groups = results.rows[0];
+      }
+
+      pool.query("SELECT * FROM posts WHERE title ILIKE $1", [`%${searchPattern}%`], (error, results) => {
+        if (error) {
+          response.status(401).send({ error: error.message });
+	  return;
+	}
+
+	if (results?.rows[0]) {
+          obj.posts = results.rows[0];
+	}
+
+        if (Object.keys(obj).length === 0) {
+          response.status(401).send({ error: "No results" });
+	} else {
+  	  response.status(200).json(obj);
+	  return;
+	}
+      });
+    });
+  });
+}
+
 export {
   getAPIDoc,
   getUsers,
@@ -537,6 +596,8 @@ export {
   signin,
   verificateCode,
   testUsernameExists,
-  getProfile
+  getProfile,
+
+  search
 }
 

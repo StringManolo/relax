@@ -29,6 +29,7 @@ app.put("/users/bio", queries_1.updateUserBio); // updates the user bio
 app.get("/profile", queries_1.getProfile);
 app.get("/users/posts", queries_1.getUserPosts);
 app.post("/users/post", queries_1.createUserPost); // Create a post from current user
+app.get("/search/:search", queries_1.search);
 /* Redesigning next endpoint: */
 /*
 app.get("/users", getUsers); // not finished endpoints:
