@@ -20,7 +20,8 @@ interface Cli {
   createPost?: boolean,
   setBio?: boolean,
   getProfile?: boolean,
-  search?: boolean
+  search?: boolean,
+  showProfile?: boolean
 }
 
 const run = (args: string): string => {
@@ -267,12 +268,24 @@ const setBio = (bio: string, token: string) => {
 
 const getProfile = (token: string) => {
   const responseProfile = run(`curl --silent http://localhost:3000/profile -H 'Authorization: ${token}'`);
+    
   const { 
     id, phone, rol, email, username, first_name, last_name, middle_name, gender,
     country, profile_picture_url, is_reported, is_blocked, bio, created_at
   } = JSON.parse(responseProfile);
 
-  const responsePosts = run(`curl --silent http://localhost:3000/users/posts -H 'Authorization: ${token}'`);
+  if (!username) {
+    const aux = JSON.parse(responseProfile);
+    if (aux?.error) {
+      console.log("\nError: " + aux.error);
+      return;
+    } else {
+      console.log("\nError: Unable to retrieve user data");
+      return;
+    }
+  }
+
+  const responsePosts = run(`curl --silent http://localhost:3000/posts -H 'Authorization: ${token}'`);
   
   const parsedPosts = JSON.parse(responsePosts);
   let posts = [];
@@ -288,7 +301,7 @@ const getProfile = (token: string) => {
    
   console.log(`
 	
-${decodeComponent(first_name)} @${username} 
+${decodeComponent(first_name)} @${decodeComponent(username)} 
 
     picture: ${decodeComponent(profile_picture_url)}
     bio: ${decodeComponent(bio)} 
@@ -304,8 +317,59 @@ ${decodeComponent(posts.length > 1 ? posts.join("") : posts.toString())}
 
 }
 
+const showProfile = (usernameParam: string, token: string) => {
+  const responseProfile = run(`curl --silent 'http://localhost:3000/users/username/${encodeComponent(usernameParam)}' -H 'Authorization: ${token}'`);
+
+  const { 
+    id, phone, rol, email, username, first_name, last_name, middle_name, gender,
+    country, profile_picture_url, is_reported, is_blocked, bio, created_at
+  } = JSON.parse(responseProfile);
+
+  if (!username) {
+    const aux = JSON.parse(responseProfile);
+    if (aux?.error) {
+      console.log("\nError: " + aux.error);
+      return;
+    } else {
+      console.log("\nError: Unable to retrieve user data");
+      return;
+    }
+  }
+
+  const responsePosts = run(`curl --silent 'http://localhost:3000/posts/username/${encodeComponent(usernameParam)}' -H 'Authorization: ${token}'`);
+
+  const parsedPosts = JSON.parse(responsePosts);
+  let posts = [];
+  for (let i = 0; i < parsedPosts.length; ++i) {
+    const { title, post, timestamp } = parsedPosts[i];
+    posts.push(`    ${decodeComponent(title)}
+      ${decodeComponent(post)}
+
+      published: ${timestamp.replace("T", " ").substr(0, timestamp.length - 5)}
+
+`);
+  }
+
+  console.log(`
+
+${decodeComponent(first_name)} @${decodeComponent(username)}
+
+    picture: ${decodeComponent(profile_picture_url)}
+    bio: ${decodeComponent(bio)}
+
+    name: ${decodeComponent(first_name)} ${decodeComponent(middle_name)} ${decodeComponent(last_name)}
+    gender: ${decodeComponent(gender)}
+    country: ${decodeComponent(country)}
+    created: ${decodeComponent(created_at.split("T")[0])}
+
+Posts:
+${decodeComponent(posts.length > 1 ? posts.join("") : posts.toString())}
+`);
+
+}
+
 const search = (searchPattern: string, token: string) => {
-  const response = run(`curl --silent http://localhost:3000/search/${encodeComponent(searchPattern)} -H 'Authorization: ${token}'`);
+  const response = run(`curl --silent 'http://localhost:3000/search/${encodeComponent(searchPattern)}' -H 'Authorization: ${token}'`);
 
   try {
     const parsed = JSON.parse(response);
@@ -405,6 +469,11 @@ const parseArguments = (): Cli => {
         cli.getProfile = true;
       break;
 
+      case "showProfile":
+      case "showprofile":
+        cli.showProfile = true;
+      break;
+
       case "search":
       case "find":
         cli.search = true;
@@ -425,9 +494,10 @@ createPost        Create a new post
 setBio            Set user bio
 getProfile        Get your own profile
 search            Search users and groups by name
+showProfile       Get profile by username
 
 Usage:
-  node cli-client.js sigin|verification|login|username|createPost|setBio|getProfile|search
+  node cli-client.js sigin|verification|login|username|createPost|setBio|getProfile|search|showProfile
 `);
         process.exit(0);
       break;
@@ -439,7 +509,7 @@ Usage:
 }
 
 
-
+// TODO: GET USER BY USERNAME
 
 
 /* <main> */
@@ -479,6 +549,10 @@ try { // catch connection errors
     const token = ask("Token -> ");
     const searchPattern = ask("Search -> ");
     search(searchPattern, token);
+  } else if (cli.showProfile) {
+    const token = ask("Token -> ");
+    const username = ask("Username -> @");
+    showProfile(username, token);
   } else {
     console.log("\nusage: node cli-client.js help");
   }

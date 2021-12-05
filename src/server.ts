@@ -26,7 +26,9 @@ import {
   testUsernameExists,
   getProfile,
 
-  search
+  search,
+  getUserByUsername,
+  getPostsByUsername
 } from "./queries";
 
 const app = express();
@@ -49,18 +51,21 @@ app.get("/", getAPIDoc); // show how to use the API
 app.get("/exists/:username", testUsernameExists); // test if the username is already taken
 app.post("/signin", signin); // register your account
 app.post("/verification", verificateCode);
-// TODO: validate verification code endpoint
 app.post("/auth", authUser); // request your token using credentials
 
 app.use(authMiddleware); // request token for next API endpoints
 app.put("/users/bio", updateUserBio); // updates the user bio
 
 
-app.get("/profile", getProfile);
-app.get("/users/posts", getUserPosts);
+app.get("/profile", getProfile); // get profile from current user
+app.get("/posts", getUserPosts); // get posts from current user
 app.post("/users/post", createUserPost); // Create a post from current user
 app.get("/search/:search", search);
 
+app.get("/users/username/:username", getUserByUsername);
+app.get("/posts/username/:username", getPostsByUsername);
+
+// creategroup, publish in group, delete post, edit post,
 
 /* Redesigning next endpoint: */
 /*

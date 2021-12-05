@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.search = exports.getProfile = exports.testUsernameExists = exports.verificateCode = exports.signin = exports.deleteUserPost = exports.editUserPost = exports.createUserPost = exports.getUserPosts = exports.updateUserBio = exports.authUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = exports.getAPIDoc = void 0;
+exports.getPostsByUsername = exports.getUserByUsername = exports.search = exports.getProfile = exports.testUsernameExists = exports.verificateCode = exports.signin = exports.deleteUserPost = exports.editUserPost = exports.createUserPost = exports.getUserPosts = exports.updateUserBio = exports.authUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = exports.getAPIDoc = void 0;
 const pool_1 = __importDefault(require("./auth/pool"));
 const sendMail_1 = __importDefault(require("./auth/sendMail"));
 const hash_1 = __importDefault(require("./auth/hash"));
@@ -471,7 +471,7 @@ const getProfile = (request, response) => {
     var _a;
     const userID = (_a = request === null || request === void 0 ? void 0 : request.headers) === null || _a === void 0 ? void 0 : _a.user_id; // this header is internal, set by authMiddleware
     if (userID) {
-        pool_1.default.query("SELECT * FROM users WHERE id = $1", [userID], (error, results) => {
+        pool_1.default.query("SELECT id, phone, rol, email, username, first_name, last_name, middle_name, gender, country, profile_picture_url, is_reported, is_blocked, bio, created_at FROM users WHERE id = $1", [userID], (error, results) => {
             var _a;
             if (error) {
                 response.status(401).send({ error: error.message });
@@ -542,3 +542,67 @@ const search = (request, response) => {
     });
 };
 exports.search = search;
+const getUserByUsername = (request, response) => {
+    var _a;
+    let username = (_a = request === null || request === void 0 ? void 0 : request.params) === null || _a === void 0 ? void 0 : _a.username;
+    if (username[0] === "@") {
+        username = username.substr(1, username.length - 1);
+    }
+    if (!username) {
+        response.status(401).send({ error: "Missing argument username" });
+        return;
+    }
+    // TODO: if profile matchs himself, call getProfile manually instead? 
+    pool_1.default.query("SELECT id, phone, rol, email, username, first_name, last_name, middle_name, gender, country, profile_picture_url, is_reported, is_blocked, bio, created_at FROM users WHERE username = $1", [username], (error, results) => {
+        if (error) {
+            response.status(401).send({ error: error.message });
+            return;
+        }
+        if (results === null || results === void 0 ? void 0 : results.rows[0]) {
+            response.status(200).json(results.rows[0]);
+            return;
+        }
+        response.status(401).send({ error: "username not found" });
+    });
+};
+exports.getUserByUsername = getUserByUsername;
+const getPostsByUsername = (request, response) => {
+    var _a;
+    let username = (_a = request === null || request === void 0 ? void 0 : request.params) === null || _a === void 0 ? void 0 : _a.username;
+    // TODO: Make sure not allowed to create users starting by @ in signin endpoint
+    if (username[0] === "@") {
+        username = username.substr(1, username.length - 1);
+    }
+    if (!username) {
+        response.status(401).send({ error: "Missing argument username" });
+        return;
+    }
+    // get user_id from username to query posts table
+    pool_1.default.query("SELECT ID FROM users WHERE username = $1", [username], (error, results) => {
+        var _a;
+        if (error) {
+            response.status(401).send({ error: error.message });
+            return;
+        }
+        const user_id = (_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.id;
+        if (!user_id) {
+            response.status(401).send({ error: "username not found" });
+            return;
+        }
+        pool_1.default.query("SELECT * FROM posts WHERE user_id = $1 ORDER BY post_id DESC", [user_id], (error, results) => {
+            if (error) {
+                response.status(401).send({ error: error.message });
+                return;
+            }
+            if (results === null || results === void 0 ? void 0 : results.rows[0]) {
+                response.status(200).json(results.rows);
+                return;
+            }
+            else {
+                response.status(401).send({ error: "username not found" });
+                return;
+            }
+        });
+    });
+};
+exports.getPostsByUsername = getPostsByUsername;

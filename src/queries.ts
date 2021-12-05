@@ -500,7 +500,7 @@ const testUsernameExists = (request: Request, response: Response) => {
 const getProfile = (request: Request, response: Response) => {
   const userID = request?.headers?.user_id; // this header is internal, set by authMiddleware
   if (userID) {
-    pool.query("SELECT * FROM users WHERE id = $1", [userID], (error, results) => {
+    pool.query("SELECT id, phone, rol, email, username, first_name, last_name, middle_name, gender, country, profile_picture_url, is_reported, is_blocked, bio, created_at FROM users WHERE id = $1", [userID], (error, results) => {
       if (error) {
 	response.status(401).send({ error: error.message });
 	return;
@@ -578,6 +578,78 @@ const search = (request: Request, response: Response) => {
   });
 }
 
+const getUserByUsername = (request: Request, response: Response) => {
+  let username = request?.params?.username;
+  if (username[0] === "@") {
+    username = username.substr(1, username.length - 1);
+  }
+
+  if (!username) {
+    response.status(401).send({ error: "Missing argument username" });
+    return;
+  } 
+  // TODO: if profile matchs himself, call getProfile manually instead? 
+  pool.query("SELECT id, phone, rol, email, username, first_name, last_name, middle_name, gender, country, profile_picture_url, is_reported, is_blocked, bio, created_at FROM users WHERE username = $1", [username], (error, results) => {
+    if (error) {
+      response.status(401).send({ error: error.message });
+      return;
+    }
+
+    if (results?.rows[0]) {
+      response.status(200).json(results.rows[0]);
+      return;
+    }
+
+    response.status(401).send({ error: "username not found" });   
+  });
+
+}
+
+const getPostsByUsername = (request: Request, response: Response) => {
+  let username = request?.params?.username;
+// TODO: Make sure not allowed to create users starting by @ in signin endpoint
+  if (username[0] === "@") {
+    username = username.substr(1, username.length - 1);
+  }
+
+  if (!username) {
+    response.status(401).send({ error: "Missing argument username" });
+    return;
+  }
+ 
+  // get user_id from username to query posts table
+  pool.query("SELECT ID FROM users WHERE username = $1", [username], (error, results) => {
+    if (error) {
+      response.status(401).send({ error: error.message });
+      return;
+    }
+
+    const user_id = results?.rows[0]?.id;
+    if (!user_id) {
+      response.status(401).send({ error: "username not found" });
+      return;
+    }
+
+    pool.query("SELECT * FROM posts WHERE user_id = $1 ORDER BY post_id DESC", [user_id], (error, results) => {
+      if (error) {
+        response.status(401).send({ error: error.message });
+        return;
+      }
+
+      if (results?.rows[0]) {
+        response.status(200).json(results.rows);
+        return;
+      } else {
+        response.status(401).send({ error: "username not found" });
+	return;
+      }
+    });
+  });
+};
+
+
+
+
 export {
   getAPIDoc,
   getUsers,
@@ -599,6 +671,8 @@ export {
   testUsernameExists,
   getProfile,
 
-  search
+  search,
+  getUserByUsername,
+  getPostsByUsername
 }
 

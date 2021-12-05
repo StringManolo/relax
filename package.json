@@ -31,6 +31,7 @@
     "cli-setBio": "node ./dist/src/clients/cli/cli-client.js setBio",
     "cli-getProfile": "node ./dist/src/clients/cli/cli-client.js getProfile",
     "cli-search": "node ./dist/src/clients/cli/cli-client.js search",
+    "cli-showProfile": "node ./dist/src/clients/cli/cli-client.js showProfile",
 
     "edit-server": "vim ./src/server.ts",
     "edit-queries": "vim ./src/queries.ts",

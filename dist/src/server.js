@@ -22,14 +22,16 @@ app.get("/", queries_1.getAPIDoc); // show how to use the API
 app.get("/exists/:username", queries_1.testUsernameExists); // test if the username is already taken
 app.post("/signin", queries_1.signin); // register your account
 app.post("/verification", queries_1.verificateCode);
-// TODO: validate verification code endpoint
 app.post("/auth", queries_1.authUser); // request your token using credentials
 app.use(authMiddleware_1.default); // request token for next API endpoints
 app.put("/users/bio", queries_1.updateUserBio); // updates the user bio
-app.get("/profile", queries_1.getProfile);
-app.get("/users/posts", queries_1.getUserPosts);
+app.get("/profile", queries_1.getProfile); // get profile from current user
+app.get("/posts", queries_1.getUserPosts); // get posts from current user
 app.post("/users/post", queries_1.createUserPost); // Create a post from current user
 app.get("/search/:search", queries_1.search);
+app.get("/users/username/:username", queries_1.getUserByUsername);
+app.get("/posts/username/:username", queries_1.getPostsByUsername);
+// creategroup, publish in group, delete post, edit post,
 /* Redesigning next endpoint: */
 /*
 app.get("/users", getUsers); // not finished endpoints:
