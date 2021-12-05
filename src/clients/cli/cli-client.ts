@@ -306,8 +306,7 @@ ${decodeComponent(posts.length > 1 ? posts.join("") : posts.toString())}
 
 const search = (searchPattern: string, token: string) => {
   const response = run(`curl --silent http://localhost:3000/search/${encodeComponent(searchPattern)} -H 'Authorization: ${token}'`);
- 
-    // TODO: decodeComponents
+
   try {
     const parsed = JSON.parse(response);
     if (parsed?.error) {

@@ -490,6 +490,7 @@ const getProfile = (request, response) => {
     }
 };
 exports.getProfile = getProfile;
+/* TODO: Filter credentials (DO NOT SEND TO CLIENT FOR PROD */
 const search = (request, response) => {
     var _a, _b;
     const userID = (_a = request === null || request === void 0 ? void 0 : request.headers) === null || _a === void 0 ? void 0 : _a.user_id;
@@ -501,33 +502,33 @@ const search = (request, response) => {
     if (!searchPattern) {
         response.status(401).send({ error: "Missing search argument" });
     }
-    pool_1.default.query("SELECT * FROM users WHERE username ILIKE $1", [`%${searchPattern}%`], (error, results) => {
+    pool_1.default.query("SELECT first_name, username FROM users WHERE username ILIKE $1", [`%${searchPattern}%`], (error, results) => {
         if (error) {
             response.status(401).send({ error: error.message });
             return;
         }
         const obj = {};
-        if (results === null || results === void 0 ? void 0 : results.rows[0]) {
+        if (results === null || results === void 0 ? void 0 : results.rows) {
             // TODO: Filter results from posts titles to only posts marked as public OR from public accounts
-            obj.users = results.rows[0];
+            obj.users = results.rows;
             //response.status(200).json(results.rows);
             //return;
         }
-        pool_1.default.query("SELECT * FROM groups WHERE title ILIKE $1", [`%${searchPattern}%`], (error, results) => {
+        pool_1.default.query("SELECT title, bio FROM groups WHERE title ILIKE $1", [`%${searchPattern}%`], (error, results) => {
             if (error) {
                 response.status(401).send({ error: error.message });
                 return;
             }
-            if (results === null || results === void 0 ? void 0 : results.rows[0]) {
-                obj.groups = results.rows[0];
+            if (results === null || results === void 0 ? void 0 : results.rows) {
+                obj.groups = results.rows;
             }
-            pool_1.default.query("SELECT * FROM posts WHERE title ILIKE $1", [`%${searchPattern}%`], (error, results) => {
+            pool_1.default.query("SELECT title FROM posts WHERE title ILIKE $1", [`%${searchPattern}%`], (error, results) => {
                 if (error) {
                     response.status(401).send({ error: error.message });
                     return;
                 }
-                if (results === null || results === void 0 ? void 0 : results.rows[0]) {
-                    obj.posts = results.rows[0];
+                if (results === null || results === void 0 ? void 0 : results.rows) {
+                    obj.posts = results.rows;
                 }
                 if (Object.keys(obj).length === 0) {
                     response.status(401).send({ error: "No results" });

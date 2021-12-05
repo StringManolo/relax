@@ -262,7 +262,6 @@ ${decodeComponent(posts.length > 1 ? posts.join("") : posts.toString())}
 const search = (searchPattern, token) => {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     const response = run(`curl --silent http://localhost:3000/search/${encodeComponent(searchPattern)} -H 'Authorization: ${token}'`);
-    // TODO: decodeComponents
     try {
         const parsed = JSON.parse(response);
         if (parsed === null || parsed === void 0 ? void 0 : parsed.error) {

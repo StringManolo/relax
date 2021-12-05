@@ -518,6 +518,7 @@ const getProfile = (request: Request, response: Response) => {
   } 
 }
 
+/* TODO: Filter credentials (DO NOT SEND TO CLIENT FOR PROD */
 const search = (request: Request, response: Response) => {
   const userID = request?.headers?.user_id;
   if (!userID) {
@@ -531,7 +532,7 @@ const search = (request: Request, response: Response) => {
   }
 
 
-  pool.query("SELECT * FROM users WHERE username ILIKE $1", [`%${searchPattern}%`], (error, results) => {
+  pool.query("SELECT first_name, username FROM users WHERE username ILIKE $1", [`%${searchPattern}%`], (error, results) => {
     if (error) {
       response.status(401).send({ error: error.message });
       return;
@@ -539,31 +540,31 @@ const search = (request: Request, response: Response) => {
 
     const obj = {} as any;
 
-    if (results?.rows[0]) {
+    if (results?.rows) {
       // TODO: Filter results from posts titles to only posts marked as public OR from public accounts
-      obj.users = results.rows[0];
+      obj.users = results.rows;
       //response.status(200).json(results.rows);
       //return;
     } 
 
-    pool.query("SELECT * FROM groups WHERE title ILIKE $1", [`%${searchPattern}%`], (error, results) => {
+    pool.query("SELECT title, bio FROM groups WHERE title ILIKE $1", [`%${searchPattern}%`], (error, results) => {
       if (error) {
         response.status(401).send({ error: error.message })
 	return;
       }
 
-      if (results?.rows[0]) {
-        obj.groups = results.rows[0];
+      if (results?.rows) {
+        obj.groups = results.rows;
       }
 
-      pool.query("SELECT * FROM posts WHERE title ILIKE $1", [`%${searchPattern}%`], (error, results) => {
+      pool.query("SELECT title FROM posts WHERE title ILIKE $1", [`%${searchPattern}%`], (error, results) => {
         if (error) {
           response.status(401).send({ error: error.message });
 	  return;
 	}
 
-	if (results?.rows[0]) {
-          obj.posts = results.rows[0];
+	if (results?.rows) {
+          obj.posts = results.rows;
 	}
 
         if (Object.keys(obj).length === 0) {
