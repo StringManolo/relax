@@ -28,7 +28,10 @@ import {
 
   search,
   getUserByUsername,
-  getPostsByUsername
+  getPostsByUsername,
+  getFriends,
+  getFriendsByUsername,
+  addFriendByUsername
 } from "./queries";
 
 const app = express();
@@ -59,9 +62,12 @@ app.put("/users/bio", updateUserBio); // updates the user bio
 
 app.get("/profile", getProfile); // get profile from current user
 app.get("/posts", getUserPosts); // get posts from current user
+app.get("/friends", getFriends); // get friends from current user
 app.post("/users/post", createUserPost); // Create a post from current user
 app.get("/search/:search", search);
 
+// app.get("/friends/username/:username", getFriendsByUsername);
+app.post("/friends/username/", addFriendByUsername);
 app.get("/users/username/:username", getUserByUsername);
 app.get("/posts/username/:username", getPostsByUsername);
 

@@ -21,7 +21,9 @@ interface Cli {
   setBio?: boolean,
   getProfile?: boolean,
   search?: boolean,
-  showProfile?: boolean
+  showProfile?: boolean,
+  friends?: boolean,
+  addFriend?: boolean
 }
 
 const run = (args: string): string => {
@@ -422,6 +424,52 @@ const search = (searchPattern: string, token: string) => {
   return undefined;
 }
 
+const addFriend = (username: string, token: string) => {
+  const response = run(`curl --silent 'http://localhost:3000/friends/username' -d 'username=${encodeComponent(username)}' -H 'Authorization: ${token}'`);
+
+  try {
+    const parsed = JSON.parse(response);
+    if (parsed?.status) {
+      console.log("\n" + parsed.status);
+    } else if (parsed?.error) {
+      console.log("\nError: " + parsed.error);
+    } else {
+      console.log("\n" + parsed);
+    }
+    return undefined;
+  } catch (error) {
+
+  }
+
+  console.log("\n" + response);
+  return undefined;
+}
+
+const getFriends = (token: string) => {
+  const response = run(`curl --silent 'http://localhost:3000/friends/' -H 'Authorization: ${token}'`);
+  
+  try {
+    const parsed = JSON.parse(response);
+    if (parsed) {
+      if (Array.isArray(parsed)) {
+        for (let i = 0; i < parsed.length; ++i) {
+          console.log("\n@" + parsed[i].friend_username);
+	}
+      } else {
+        console.log("\n@" + parsed.friend_username);
+      }
+    } else if (parsed.error) {
+      console.log("\nError: " + parsed.error);
+    } 
+    return undefined;
+  } catch (error) {
+
+  }
+
+  console.log("\n" + response);
+  return undefined;
+}
+
 
 const parseArguments = (): Cli => {
   const cli: Cli = {} as any;
@@ -479,6 +527,18 @@ const parseArguments = (): Cli => {
         cli.search = true;
       break;
 
+      case "friend":
+      case "friends":
+      case "getFriend":
+      case "getFriends":
+        cli.friends = true;
+      break;
+
+      case "addFriend":
+      case "addfriend":
+        cli.addFriend = true;
+      break;
+
       case "h":
       case "help":
       case "Help":
@@ -495,9 +555,11 @@ setBio            Set user bio
 getProfile        Get your own profile
 search            Search users and groups by name
 showProfile       Get profile by username
+getFriends        Get a list of friends
+addFriend         Add a user to your list of friends
 
 Usage:
-  node cli-client.js sigin|verification|login|username|createPost|setBio|getProfile|search|showProfile
+  node cli-client.js sigin|verification|login|username|createPost|setBio|getProfile|search|showProfile|getFriends|addFriend
 `);
         process.exit(0);
       break;
@@ -549,10 +611,17 @@ try { // catch connection errors
     const token = ask("Token -> ");
     const searchPattern = ask("Search -> ");
     search(searchPattern, token);
-  } else if (cli.showProfile) {
+  } else if (cli?.showProfile) {
     const token = ask("Token -> ");
     const username = ask("Username -> @");
     showProfile(username, token);
+  } else if (cli?.addFriend) {
+    const token = ask("Token -> ");
+    const username = ask("Username -> @");
+    addFriend(username, token);
+  } else if (cli?.friends) {
+    const token = ask("Token -> ");
+    getFriends(token);
   } else {
     console.log("\nusage: node cli-client.js help");
   }

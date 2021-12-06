@@ -8,6 +8,15 @@
 + Test if arguments are null when updating rows ❌
 + Add logs of requests ❌
 + Hash Passwords ✅
++ Add email alerts (let user chose), send friend invitations ❌
++ Add Events nearly ❌
++ Delete account option ❌
++ Change password option ❌
++ Change email option ❌
++ Support email (to help users) ❌
++ Help menu inside social network ❌
++ Assistence for first usage (let user skip) ❌
++ Add friends, subscribers and groups ❌
 + Add token expiration date ❌
 + Test token generation security 
 + Add a check to find if node has been compiled with crypto support? ❌

@@ -27,8 +27,11 @@ app.use(authMiddleware_1.default); // request token for next API endpoints
 app.put("/users/bio", queries_1.updateUserBio); // updates the user bio
 app.get("/profile", queries_1.getProfile); // get profile from current user
 app.get("/posts", queries_1.getUserPosts); // get posts from current user
+app.get("/friends", queries_1.getFriends); // get friends from current user
 app.post("/users/post", queries_1.createUserPost); // Create a post from current user
 app.get("/search/:search", queries_1.search);
+// app.get("/friends/username/:username", getFriendsByUsername);
+app.post("/friends/username/", queries_1.addFriendByUsername);
 app.get("/users/username/:username", queries_1.getUserByUsername);
 app.get("/posts/username/:username", queries_1.getPostsByUsername);
 // creategroup, publish in group, delete post, edit post,

@@ -1,6 +1,6 @@
 {
   "name": "relax",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Social Network",
   "main": "index.js",
   "scripts": {
@@ -32,6 +32,8 @@
     "cli-getProfile": "node ./dist/src/clients/cli/cli-client.js getProfile",
     "cli-search": "node ./dist/src/clients/cli/cli-client.js search",
     "cli-showProfile": "node ./dist/src/clients/cli/cli-client.js showProfile",
+    "cli-getFriends": "node ./dist/src/clients/cli/cli-client.js getFriends",
+    "cli-addFriend": "node ./dist/src/clients/cli/cli-client.js addFriend",
 
     "edit-server": "vim ./src/server.ts",
     "edit-queries": "vim ./src/queries.ts",

@@ -522,7 +522,7 @@ const getProfile = (request: Request, response: Response) => {
 const search = (request: Request, response: Response) => {
   const userID = request?.headers?.user_id;
   if (!userID) {
-    response.status(401).send({ error: "You can't search without being logged in" });
+    response.status(401).send({ error: "Missing token. You can't search without being logged in" });
     return;
   }
 
@@ -580,7 +580,7 @@ const search = (request: Request, response: Response) => {
 
 const getUserByUsername = (request: Request, response: Response) => {
   let username = request?.params?.username;
-  if (username[0] === "@") {
+  if (username && username[0] === "@") {
     username = username.substr(1, username.length - 1);
   }
 
@@ -608,12 +608,12 @@ const getUserByUsername = (request: Request, response: Response) => {
 const getPostsByUsername = (request: Request, response: Response) => {
   let username = request?.params?.username;
 // TODO: Make sure not allowed to create users starting by @ in signin endpoint
-  if (username[0] === "@") {
+  if (username && username[0] === "@") {
     username = username.substr(1, username.length - 1);
   }
 
   if (!username) {
-    response.status(401).send({ error: "Missing argument username" });
+    response.status(401).send({ error: "Missing token" });
     return;
   }
  
@@ -647,6 +647,77 @@ const getPostsByUsername = (request: Request, response: Response) => {
   });
 };
 
+// get user list of friends
+const getFriends = (request: Request, response: Response) => {
+  const userID = request?.headers?.user_id;
+  if (!userID) {
+    response.status(401).send({ error: "Missing token" });
+    return;
+  }
+
+  pool.query("SELECT friend_username FROM friends WHERE user_id = $1", [userID], (error, results) => {
+    if (error) {
+      response.status(401).send({ error: error.message });
+      return;
+    }
+
+    if (results?.rows[0]) {
+      response.status(200).json(results.rows);
+      return;
+    } else {
+      response.status(401).send({ error: "No friends found" });
+      return;
+    }
+  });
+}
+
+// get list of friends from an user
+const getFriendsByUsername = (request: Request, response: Response) => {
+
+}
+
+// add a friend to a user's friends list
+const addFriendByUsername = (request: Request, response: Response) => {
+  const userID = request?.headers?.user_id;
+  if (!userID) {
+    response.status(401).send({ error: "Missing token" });
+    return;
+  }
+
+  let { username } = request?.body;
+
+  if (username && username[0] === "@") {
+    username = username.substr(1, username.length - 1);
+  }
+
+  if (!username) {
+    response.status(401).send({ error: "Missing argument username" });
+    return;
+  }
+
+  pool.query("SELECT * FROM users WHERE id = $1", [userID], (error, results) => {
+    if (error) {
+      response.status(401).send({ error: error.message });
+      return;
+    }
+
+    if (!results?.rows[0]?.id) {
+      response.status(401).send({ error: "username not found" });
+    }
+
+    pool.query("INSERT INTO friends (user_id, friend_username) VALUES ($1, $2)", 
+      [userID, username], (error, results) => {
+      if (error) {
+        response.status(401).send({ error: error.message });
+	return;
+      }
+
+      response.status(200).send({ status: "Done" });
+      return;
+    });
+  });
+}
+
 
 
 
@@ -673,6 +744,9 @@ export {
 
   search,
   getUserByUsername,
-  getPostsByUsername
+  getPostsByUsername,
+  getFriends,
+  getFriendsByUsername,
+  addFriendByUsername
 }
 

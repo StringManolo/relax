@@ -68,7 +68,6 @@ CREATE TABLE friends (
   friends_id SERIAL PRIMARY KEY,
   user_id INT,
   friend_user_id INT,
-  friend_first_name VARCHAR(20),
   friend_username VARCHAR(100),
   CONSTRAINT fk_id
     FOREIGN KEY(user_id)
