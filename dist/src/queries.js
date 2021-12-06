@@ -83,12 +83,12 @@ const authUser = (request, response) => {
     const { username, email, password } = request.body;
     if (!password) {
         //throw new Error("Password missing");
-        response.status(400).json({ missing: "password" });
+        response.status(401).json({ missing: "password" });
         return;
     }
     if (!username && !email) {
         //throw new Error("Username or Email missing");
-        response.status(400).json({ missing: "username || email" });
+        response.status(401).json({ missing: "username || email" });
         return;
     }
     if (username) {
@@ -134,6 +134,7 @@ const authUser = (request, response) => {
                                     response.status(401).json({ error: error.message });
                                     return;
                                 }
+                                response.cookie("tokenCookie", token, { maxAge: 9000000, httpOnly: true }); // TODO: add secure flag for PROD
                                 response.status(200).json({ token: token });
                                 return;
                             });

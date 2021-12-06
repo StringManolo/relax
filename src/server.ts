@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import { HttpError } from "http-errors";
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 
 import authMiddleware from "./auth/authMiddleware";
 import corsMiddleware from "./auth/corsMiddleware"; // allow test localhost for dev
@@ -45,6 +46,7 @@ const exit = (exitMsg: string) => {
 
 
 app.use(corsMiddleware); // allow test localhost for dev
+app.use(cookieParser()); // parse cookies, needed for authMiddleware
 
 /* <main> */
 app.use(bodyParser.json()); // allow to easily get body arguments from requests

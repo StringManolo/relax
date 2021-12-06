@@ -1,8 +1,15 @@
 import pool from "./pool";
 import { Request, Response, NextFunction } from "express";
 
+// allows to auth using cookies(browser) or token(cli)
 const authMiddleware = (request: Request, response: Response, next: NextFunction) => {
-  const token = request?.headers?.authorization;
+  const cookieToken = request?.cookies?.tokenCookie; // make sure to have app.use(express.cookieParser()); before app.use(authMiddleware);
+  let token;
+  if (cookieToken) {
+    token = cookieToken;
+  } else {
+    token = request?.headers?.authorization;
+  }
 
   if (token) {
     pool.query("SELECT * FROM users WHERE token = $1", [token], (error, results) => {

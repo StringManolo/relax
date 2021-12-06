@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const body_parser_1 = __importDefault(require("body-parser"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const authMiddleware_1 = __importDefault(require("./auth/authMiddleware"));
 const corsMiddleware_1 = __importDefault(require("./auth/corsMiddleware")); // allow test localhost for dev
 const queries_1 = require("./queries");
@@ -15,6 +16,7 @@ const exit = (exitMsg) => {
     process.exit(-1);
 };
 app.use(corsMiddleware_1.default); // allow test localhost for dev
+app.use((0, cookie_parser_1.default)()); // parse cookies, needed for authMiddleware
 /* <main> */
 app.use(body_parser_1.default.json()); // allow to easily get body arguments from requests
 app.use(body_parser_1.default.urlencoded({ extended: true }));

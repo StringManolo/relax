@@ -1,6 +1,7 @@
 + STRIP CREDENTIALS FROM auth/pool.ts before PROD ❌
 + Create API documentation. ❌
 + Check if user already exists. ❌
++ Create REACT + Typescript front-end ❌
 + Use OAUTH2 ? ❌
 + Check if account is private ❌
 + Make sure username, email, etc are UNIQUE ❌

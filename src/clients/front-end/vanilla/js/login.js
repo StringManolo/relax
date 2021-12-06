@@ -14,13 +14,14 @@ try {
   const response = await fetch(`${ENDPOINT}/auth`, {
     body: (userChosedEmail ? "email=" : "username=") + emailOrUsername + "&password=" + password,
     method: "POST",
+    credentials: "include", // allows to set-cookie from response headers */
     headers: {
       "content-type": "application/x-www-form-urlencoded"
     }
   });
   const data = await response.json();
   if (data?.token) {
-    localStorage.token = data.token;
+    // localStorage.token = data.token; // using cookies instead of localStorage
     location = "../profile.html";
   }
 } catch(err) {
