@@ -23,6 +23,12 @@ try {
   if (data?.token) {
     // localStorage.token = data.token; // using cookies instead of localStorage
     location = "../profile.html";
+  } else if (data?.error) {
+    alert("Error: " + data.error);
+  } else if (data?.missing) {
+    alert("Missing " + data.missing);
+  } else {
+    alert(JSON.stringify(data));
   }
 } catch(err) {
   alert(err);

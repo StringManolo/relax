@@ -1,43 +1,41 @@
-const form = document.querySelector("form");
-
 const ENDPOINT = "http://localhost:3000";
 
-form.addEventListener("submit", async evt => {
+const decodeComponent = (component) => {
+  while (/\%27/g.test(component)) {
+    component = component.replace(/\%27/g, "'");
+  }
+  return decodeURIComponent(component);
+}
+
+window.addEventListener("load", async evt => {
   const response = await fetch(`${ENDPOINT}/profile`, {
-    body: (userChosedEmail ? "email=" : "username=") + emailOrUsername + "&password=" + password,
     method: "GET",
-    headers: {
-      "Authorization: 
-    }
+    credentials: "include"
   });
   const data = await response.json();
-  alert(JSON.stringify(data, null, 2));
-});
-
-
-/*
-const getProfile = (token: string) => {
-  const responseProfile = run(`curl --silent http://localhost:3000/profile -H 'Authorization: ${token}'`);
 
   const {
     id, phone, rol, email, username, first_name, last_name, middle_name, gender,
     country, profile_picture_url, is_reported, is_blocked, bio, created_at
-  } = JSON.parse(responseProfile);
+  } = data;
 
   if (!username) {
-    const aux = JSON.parse(responseProfile);
-    if (aux?.error) {
-      console.log("\nError: " + aux.error);
+    if (data?.error) {
+      alert("\nError: " + data.error);
       return;
     } else {
-      console.log("\nError: Unable to retrieve user data");
+      alert("\nError: Unable to retrieve user data");
       return;
     }
   }
 
-  const responsePosts = run(`curl --silent http://localhost:3000/posts -H 'Authorization: ${token}'`);
+  const responsePosts = await fetch(`${ENDPOINT}/posts`, {
+    method: "GET",
+    credentials: "include"
+  });
 
-  const parsedPosts = JSON.parse(responsePosts);
+  const parsedPosts = await responsePosts.json();
+
   let posts = [];
   for (let i = 0; i < parsedPosts.length; ++i) {
     const { title, post, timestamp } = parsedPosts[i];
@@ -49,8 +47,8 @@ const getProfile = (token: string) => {
 `);
   }
 
-  console.log(`
-
+  const responseElement = document.createElement("pre");
+  responseElement.innerText = `
 ${decodeComponent(first_name)} @${decodeComponent(username)}
 
     picture: ${decodeComponent(profile_picture_url)}
@@ -61,9 +59,10 @@ ${decodeComponent(first_name)} @${decodeComponent(username)}
     country: ${decodeComponent(country)}
     created: ${decodeComponent(created_at.split("T")[0])}
 
-Posts:
+Post:
 ${decodeComponent(posts.length > 1 ? posts.join("") : posts.toString())}
-`);
+`;
 
-}
-*/
+  document.body.appendChild(responseElement);
+});
+
