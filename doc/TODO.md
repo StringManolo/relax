@@ -13,6 +13,7 @@
 + Add Events nearly ❌
 + Delete account option ❌
 + Change password option ❌
++ Rate limit username guessing (prevent db enumeration)
 + Change email option ❌
 + Support email (to help users) ❌
 + Help menu inside social network ❌
