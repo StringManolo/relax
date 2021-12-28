@@ -64,9 +64,14 @@ ${htmlEntities(decodeComponent(posts.length > 1 ? posts.join("") : posts.toStrin
 
   editableBio.onblur = async () => {
     try {
+
+      alert(encodeComponent(editableBio.value));
       const response = await fetch(`${ENDPOINT}/users/bio`, {
         method: "POST",
         credentials: "include",
+	headers: {
+	  "content-type": "application/x-www-form-urlencoded"
+	},
         body: `bio=${encodeComponent(editableBio.value)}`
       });
 

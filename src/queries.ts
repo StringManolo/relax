@@ -208,6 +208,7 @@ const authUser = (request: Request, response: Response) => {
 
 const updateUserBio = (request: Request, response: Response) => {
   const { bio } = request.body;
+console.log("The bio: " + bio);
   const userID = request?.headers?.user_id; // this header is internal, set by authMiddleware
   pool.query("UPDATE users SET bio = $1 WHERE id = $2", [bio, userID], (error, results) => {
     if (error) {

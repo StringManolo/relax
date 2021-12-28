@@ -215,6 +215,7 @@ exports.authUser = authUser;
 const updateUserBio = (request, response) => {
     var _a;
     const { bio } = request.body;
+    console.log("The bio: " + bio);
     const userID = (_a = request === null || request === void 0 ? void 0 : request.headers) === null || _a === void 0 ? void 0 : _a.user_id; // this header is internal, set by authMiddleware
     pool_1.default.query("UPDATE users SET bio = $1 WHERE id = $2", [bio, userID], (error, results) => {
         if (error) {
