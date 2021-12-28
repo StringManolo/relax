@@ -209,7 +209,7 @@ const createPost = (title, post, token) => {
     return undefined;
 };
 const setBio = (bio, token) => {
-    const response = run(`curl --silent http://localhost:3000/users/bio -d 'bio=${encodeComponent(bio)}' -X PUT -H 'Authorization: ${token}'`);
+    const response = run(`curl --silent http://localhost:3000/users/bio -d 'bio=${encodeComponent(bio)}' -X POST -H 'Authorization: ${token}'`);
     try {
         const parsed = JSON.parse(response);
         if (parsed === null || parsed === void 0 ? void 0 : parsed.status) {

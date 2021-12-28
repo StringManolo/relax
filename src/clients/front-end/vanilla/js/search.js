@@ -1,25 +1,7 @@
+import { encodeComponent, decodeComponent, htmlEntities } from "./utils.js";
+
 const ENDPOINT = "http://localhost:3000";
 const form = document.querySelector("form");
-
-const encodeComponent = (component) => {
-  while (/\'/g.test(component)) {
-    component = component.replace(/\'/g, "%27");
-  }                                                                                                  
-  return encodeURIComponent(component);
-}
-
-const decodeComponent = (component) => {
-  while (/\%27/g.test(component)) {
-    component = component.replace(/\%27/g, "'");
-  }
-  return decodeURIComponent(component);
-}
-
-const htmlEntities = (markup) => {
-  const p = document.createElement("p");
-  p.textContent = markup
-  return p.innerHTML;
-}
 
 form.addEventListener("submit", async evt => {
   evt.preventDefault();
@@ -70,7 +52,6 @@ form.addEventListener("submit", async evt => {
         document.body.appendChild(responseElement);
 
 	const profileLinks = document.querySelectorAll(".searchProfileLink");
-	alert(profileLinks.length);
         profileLinks.forEach(link => {
           link.addEventListener("click", async (evt) => {
             evt.preventDefault();

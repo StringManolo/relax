@@ -44,7 +44,6 @@ const exit = (exitMsg: string) => {
 }
 
 
-
 app.use(corsMiddleware); // allow test localhost for dev
 app.use(cookieParser()); // parse cookies, needed for authMiddleware
 
@@ -59,7 +58,7 @@ app.post("/verification", verificateCode);
 app.post("/auth", authUser); // request your token using credentials
 
 app.use(authMiddleware); // request token for next API endpoints
-app.put("/users/bio", updateUserBio); // updates the user bio
+app.post("/users/bio", updateUserBio); // updates the user bio
 
 
 app.get("/profile", getProfile); // get profile from current user

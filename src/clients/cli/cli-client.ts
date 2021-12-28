@@ -248,7 +248,7 @@ const createPost = (title: string, post: string, token: string) => {
 }
 
 const setBio = (bio: string, token: string) => {
-  const response = run(`curl --silent http://localhost:3000/users/bio -d 'bio=${encodeComponent(bio)}' -X PUT -H 'Authorization: ${token}'`);
+  const response = run(`curl --silent http://localhost:3000/users/bio -d 'bio=${encodeComponent(bio)}' -X POST -H 'Authorization: ${token}'`);
   
   try {
     const parsed = JSON.parse(response);

@@ -1,11 +1,6 @@
-const ENDPOINT = "http://localhost:3000";
+import { decodeComponent, encodeComponent, htmlEntities } from "./utils.js";
 
-const decodeComponent = (component) => {
-  while (/\%27/g.test(component)) {
-    component = component.replace(/\%27/g, "'");
-  }
-  return decodeURIComponent(component);
-}
+const ENDPOINT = "http://localhost:3000";
 
 window.addEventListener("load", async evt => {
   const response = await fetch(`${ENDPOINT}/profile`, {
@@ -48,21 +43,53 @@ window.addEventListener("load", async evt => {
   }
 
   const responseElement = document.createElement("pre");
-  responseElement.innerText = `
-${decodeComponent(first_name)} @${decodeComponent(username)}
+  responseElement.innerHTML = `
+${htmlEntities(decodeComponent(first_name))} @${htmlEntities(decodeComponent(username))}
 
-    picture: ${decodeComponent(profile_picture_url)}
-    bio: ${decodeComponent(bio)}
+    picture: ${htmlEntities(decodeComponent(profile_picture_url))}
+    bio: <input type="text" id="editableBio" value="${htmlEntities(decodeComponent(bio))}"/> <a href="${ENDPOINT}/users/bio" id="setBioUrl">Change</a>
 
-    name: ${decodeComponent(first_name)} ${decodeComponent(middle_name)} ${decodeComponent(last_name)}
-    gender: ${decodeComponent(gender)}
-    country: ${decodeComponent(country)}
-    created: ${decodeComponent(created_at.split("T")[0])}
+    name: ${htmlEntities(decodeComponent(first_name))} ${htmlEntities(decodeComponent(middle_name))} ${htmlEntities(decodeComponent(last_name))}
+    gender: ${htmlEntities(decodeComponent(gender))}
+    country: ${htmlEntities(decodeComponent(country))}
+    created: ${htmlEntities(decodeComponent(created_at.split("T")[0]))}
 
 Post:
-${decodeComponent(posts.length > 1 ? posts.join("") : posts.toString())}
+${htmlEntities(decodeComponent(posts.length > 1 ? posts.join("") : posts.toString()))}
 `;
 
   document.body.appendChild(responseElement);
+
+  const editableBio = document.querySelector("#editableBio");
+
+  editableBio.onblur = async () => {
+    try {
+      const response = await fetch(`${ENDPOINT}/users/bio`, {
+        method: "POST",
+        credentials: "include",
+        body: `bio=${encodeComponent(editableBio.value)}`
+      });
+
+      const parsed = await response.json();
+
+
+      if (parsed?.status) {
+        alert(parsed.status);
+      } else if (parsed?.error) {
+        alert(parsed.error);
+      } else {
+        alert(parsed);
+      }
+
+    } catch(err) {
+      alert(err);
+    }
+  }
+
+
+  document.querySelector("#setBioUrl").addEventListener("click", evnt => {
+    evnt.preventDefault();
+    editableBio.focus();
+  });
 });
 

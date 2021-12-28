@@ -26,7 +26,7 @@ app.post("/signin", queries_1.signin); // register your account
 app.post("/verification", queries_1.verificateCode);
 app.post("/auth", queries_1.authUser); // request your token using credentials
 app.use(authMiddleware_1.default); // request token for next API endpoints
-app.put("/users/bio", queries_1.updateUserBio); // updates the user bio
+app.post("/users/bio", queries_1.updateUserBio); // updates the user bio
 app.get("/profile", queries_1.getProfile); // get profile from current user
 app.get("/posts", queries_1.getUserPosts); // get posts from current user
 app.get("/friends", queries_1.getFriends); // get friends from current user

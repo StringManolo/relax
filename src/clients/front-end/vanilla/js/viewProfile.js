@@ -1,11 +1,6 @@
-const ENDPOINT = "http://localhost:3000";
+import { decodeComponent } from "./utils.js";
 
-const decodeComponent = (component) => {
-  while (/\%27/g.test(component)) {
-    component = component.replace(/\%27/g, "'");
-  }
-  return decodeURIComponent(component);
-}
+const ENDPOINT = "http://localhost:3000";
 
 window.addEventListener("load", async evt => {
   const response = await fetch(`${ENDPOINT}/profile`, {
