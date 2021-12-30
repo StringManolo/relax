@@ -88,10 +88,20 @@ form.addEventListener("submit", async evt => {
 
 	    }
 
+
+
+	    const responseIsFriend = await fetch(`${ENDPOINT}/isFriend/${decodeComponent(username)}`, {
+              method: "GET",
+	      credentials: "include"
+	    });
+
+	    const parsedIsFriend = await responseIsFriend.json();
+	    
+
 	    const responseElement = document.createElement("pre");
 	    responseElement.innerHTML = `
 
-${htmlEntities(decodeComponent(first_name))} @${htmlEntities(decodeComponent(username))} <a href="${ENDPOINT}/friends/username" id="addAsFriendFromProfile">Add as friend</a>
+${htmlEntities(decodeComponent(first_name))} @${htmlEntities(decodeComponent(username))} <a href="${ENDPOINT}/friends/username" id="addAsFriendFromProfile">${parsedIsFriend?.exists === true ? "Friend" : "Add as friend"}</a>
 
     picture: ${htmlEntities(decodeComponent(profile_picture_url))}
     bio: ${htmlEntities(decodeComponent(bio))}
@@ -110,7 +120,9 @@ ${htmlEntities(decodeComponent(posts.length > 1 ? posts.join("") : posts.toStrin
             const addFriend = document.querySelector("#addAsFriendFromProfile");
             addFriend.addEventListener("click", async (evnt) => {
               evnt.preventDefault();
-	      
+	      if (parsedIsFriend?.exists === true) {
+                return;
+	      }
 	      const response = await fetch(`${ENDPOINT}/friends/username`, {
                 method: "POST",
                 credentials: "include",
