@@ -1,6 +1,7 @@
 + STRIP CREDENTIALS FROM auth/pool.ts before PROD ❌
 + Create API documentation. ❌
 + Check if user already exists. ❌
++ Check if friend already exists. ❌
 + Create REACT + Typescript front-end ❌
 + Use OAUTH2 ? ❌
 + Check if account is private ❌
@@ -15,6 +16,7 @@
 + Change password option ❌
 + Rate limit username guessing (prevent db enumeration)
 + Change email option ❌
++ Duality msg/sn? ❌
 + Support email (to help users) ❌
 + Help menu inside social network ❌
 + Assistence for first usage (let user skip) ❌

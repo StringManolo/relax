@@ -28,6 +28,7 @@
     "cli-showProfile": "node ./dist/src/clients/cli/cli-client.js showProfile",
     "cli-getFriends": "node ./dist/src/clients/cli/cli-client.js getFriends",
     "cli-addFriend": "node ./dist/src/clients/cli/cli-client.js addFriend",
+    "cli-friend": "node ./dist/src/clients/cli/cli-client.js friend",
     "edit-server": "vim ./src/server.ts",
     "edit-queries": "vim ./src/queries.ts",
     "edit-cli": "vim ./src/clients/cli/cli-client.ts",

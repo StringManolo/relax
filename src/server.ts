@@ -32,7 +32,8 @@ import {
   getPostsByUsername,
   getFriends,
   getFriendsByUsername,
-  addFriendByUsername
+  addFriendByUsername,
+  testAlreadyFriend
 } from "./queries";
 
 const app = express();
@@ -60,6 +61,7 @@ app.post("/auth", authUser); // request your token using credentials
 app.use(authMiddleware); // request token for next API endpoints
 app.post("/users/bio", updateUserBio); // updates the user bio
 
+app.get("/isFriend/:username", testAlreadyFriend);
 
 app.get("/profile", getProfile); // get profile from current user
 app.get("/posts", getUserPosts); // get posts from current user

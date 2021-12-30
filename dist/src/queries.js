@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addFriendByUsername = exports.getFriendsByUsername = exports.getFriends = exports.getPostsByUsername = exports.getUserByUsername = exports.search = exports.getProfile = exports.testUsernameExists = exports.verificateCode = exports.signin = exports.deleteUserPost = exports.editUserPost = exports.createUserPost = exports.getUserPosts = exports.updateUserBio = exports.authUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = exports.getAPIDoc = void 0;
+exports.testAlreadyFriend = exports.addFriendByUsername = exports.getFriendsByUsername = exports.getFriends = exports.getPostsByUsername = exports.getUserByUsername = exports.search = exports.getProfile = exports.testUsernameExists = exports.verificateCode = exports.signin = exports.deleteUserPost = exports.editUserPost = exports.createUserPost = exports.getUserPosts = exports.updateUserBio = exports.authUser = exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = exports.getAPIDoc = void 0;
 const pool_1 = __importDefault(require("./auth/pool"));
 const sendMail_1 = __importDefault(require("./auth/sendMail"));
 const hash_1 = __importDefault(require("./auth/hash"));
@@ -215,7 +215,6 @@ exports.authUser = authUser;
 const updateUserBio = (request, response) => {
     var _a;
     const { bio } = request.body;
-    console.log("The bio: " + bio);
     const userID = (_a = request === null || request === void 0 ? void 0 : request.headers) === null || _a === void 0 ? void 0 : _a.user_id; // this header is internal, set by authMiddleware
     pool_1.default.query("UPDATE users SET bio = $1 WHERE id = $2", [bio, userID], (error, results) => {
         if (error) {
@@ -672,3 +671,25 @@ const addFriendByUsername = (request, response) => {
     });
 };
 exports.addFriendByUsername = addFriendByUsername;
+const testAlreadyFriend = (request, response) => {
+    var _a;
+    if ((_a = request === null || request === void 0 ? void 0 : request.params) === null || _a === void 0 ? void 0 : _a.username) {
+        pool_1.default.query("SELECT * FROM friends WHERE friend_username = $1", [request.params.username], (error, results) => {
+            var _a, _b;
+            if (error) {
+                response.status(401).send({ error: error.message });
+                return;
+            }
+            if (((_a = results === null || results === void 0 ? void 0 : results.rows[0]) === null || _a === void 0 ? void 0 : _a.friend_username) === ((_b = request === null || request === void 0 ? void 0 : request.params) === null || _b === void 0 ? void 0 : _b.username)) {
+                response.status(200).send({ exists: true });
+            }
+            else {
+                response.status(200).send({ exists: false });
+            }
+        });
+    }
+    else {
+        response.status(401).send({ error: "Missing argument" });
+    }
+};
+exports.testAlreadyFriend = testAlreadyFriend;

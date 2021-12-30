@@ -208,7 +208,6 @@ const authUser = (request: Request, response: Response) => {
 
 const updateUserBio = (request: Request, response: Response) => {
   const { bio } = request.body;
-console.log("The bio: " + bio);
   const userID = request?.headers?.user_id; // this header is internal, set by authMiddleware
   pool.query("UPDATE users SET bio = $1 WHERE id = $2", [bio, userID], (error, results) => {
     if (error) {
@@ -720,7 +719,24 @@ const addFriendByUsername = (request: Request, response: Response) => {
   });
 }
 
+const testAlreadyFriend = (request: Request, response: Response) => {
+  if (request?.params?.username) {
+    pool.query("SELECT * FROM friends WHERE friend_username = $1", [request.params.username], (error, results) => {
+      if (error) {
+        response.status(401).send({ error: error.message });
+        return;
+      }
 
+      if (results?.rows[0]?.friend_username === request?.params?.username) {
+        response.status(200).send({ exists: true });
+      } else {
+        response.status(200).send({ exists: false });
+      }
+    });
+  } else {
+    response.status(401).send({ error: "Missing argument" });
+  }
+}
 
 
 export {
@@ -749,6 +765,7 @@ export {
   getPostsByUsername,
   getFriends,
   getFriendsByUsername,
-  addFriendByUsername
+  addFriendByUsername,
+  testAlreadyFriend
 }
 

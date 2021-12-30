@@ -23,7 +23,8 @@ interface Cli {
   search?: boolean,
   showProfile?: boolean,
   friends?: boolean,
-  addFriend?: boolean
+  addFriend?: boolean,
+  friend?: boolean
 }
 
 const run = (args: string): string => {
@@ -470,6 +471,29 @@ const getFriends = (token: string) => {
   return undefined;
 }
 
+const testFriend = (token: string, friend: string) => {
+  const response = run(`curl --silent 'http://localhost:3000/isFriend/${friend}' -H 'Authorization: ${token}'`);
+
+  try {
+    const parsed = JSON.parse(response);
+    if (parsed?.exists === true) {
+      console.log("\n" + friend + " already a friend");
+    } else if (parsed?.exists === false) {
+      console.log("\n" + friend + " is not a friend");
+    } else if (parsed?.error) {
+      console.log("\nError: " + parsed.error);
+    } else {
+      console.log("\n" + parsed);
+    }
+    return undefined;
+  } catch (error) {
+
+  }
+
+  console.log("\n" + response);
+  return undefined;
+}
+
 
 const parseArguments = (): Cli => {
   const cli: Cli = {} as any;
@@ -527,7 +551,6 @@ const parseArguments = (): Cli => {
         cli.search = true;
       break;
 
-      case "friend":
       case "friends":
       case "getFriend":
       case "getFriends":
@@ -537,6 +560,11 @@ const parseArguments = (): Cli => {
       case "addFriend":
       case "addfriend":
         cli.addFriend = true;
+      break;
+
+      case "friend":
+      case "Friend":
+        cli.friend = true;
       break;
 
       case "h":
@@ -557,9 +585,10 @@ search            Search users and groups by name
 showProfile       Get profile by username
 getFriends        Get a list of friends
 addFriend         Add a user to your list of friends
+friend            Test if user is already a friend
 
 Usage:
-  node cli-client.js sigin|verification|login|username|createPost|setBio|getProfile|search|showProfile|getFriends|addFriend
+  node cli-client.js sigin|verification|login|username|createPost|setBio|getProfile|search|showProfile|getFriends|addFriend|friend
 `);
         process.exit(0);
       break;
@@ -622,6 +651,10 @@ try { // catch connection errors
   } else if (cli?.friends) {
     const token = ask("Token -> ");
     getFriends(token);
+  } else if (cli.friend) {
+    const token = ask("Token -> ");
+    const friend = ask("Friend Username -> @");
+    testFriend(token, friend);
   } else {
     console.log("\nusage: node cli-client.js help");
   }

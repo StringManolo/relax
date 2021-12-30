@@ -89,23 +89,46 @@ form.addEventListener("submit", async evt => {
 	    }
 
 	    const responseElement = document.createElement("pre");
-	    responseElement.innerText = `
+	    responseElement.innerHTML = `
 
-${decodeComponent(first_name)} @${decodeComponent(username)}
+${htmlEntities(decodeComponent(first_name))} @${htmlEntities(decodeComponent(username))} <a href="${ENDPOINT}/friends/username" id="addAsFriendFromProfile">Add as friend</a>
 
-    picture: ${decodeComponent(profile_picture_url)}
-    bio: ${decodeComponent(bio)}
+    picture: ${htmlEntities(decodeComponent(profile_picture_url))}
+    bio: ${htmlEntities(decodeComponent(bio))}
 
-    name: ${decodeComponent(first_name)} ${decodeComponent(middle_name)} ${decodeComponent(last_name)}
-    gender: ${decodeComponent(gender)}
-    country: ${decodeComponent(country)}
-    created: ${decodeComponent(created_at.split("T")[0])}
+    name: ${htmlEntities(decodeComponent(first_name))} ${htmlEntities(decodeComponent(middle_name))} ${htmlEntities(decodeComponent(last_name))}
+    gender: ${htmlEntities(decodeComponent(gender))}
+    country: ${htmlEntities(decodeComponent(country))}
+    created: ${htmlEntities(decodeComponent(created_at.split("T")[0]))}
 
 Posts:
-${decodeComponent(posts.length > 1 ? posts.join("") : posts.toString())}
+${htmlEntities(decodeComponent(posts.length > 1 ? posts.join("") : posts.toString()))}
 `;
 
 	    document.body.appendChild(responseElement);
+
+            const addFriend = document.querySelector("#addAsFriendFromProfile");
+            addFriend.addEventListener("click", async (evnt) => {
+              evnt.preventDefault();
+	      
+	      const response = await fetch(`${ENDPOINT}/friends/username`, {
+                method: "POST",
+                credentials: "include",
+		headers: {
+		  "content-type": "application/x-www-form-urlencoded"
+		},
+		body: `username=${username}` 
+	      });
+
+
+	      const parsed = await response.json();
+	      if (parsed?.error) {
+		alert("\nError: " + parsed.error);
+		return undefined;
+	      } else {
+                alert(parsed.status);
+              }
+	    });
 	  });
 	});
       }
